@@ -9,7 +9,7 @@ import MarkSheet from "@/app/components/MarkSheet";
 import WritingAnswer from "@/app/components/WritingAnswer";
 import { useAuth } from "@/app/lib/auth-context";
 import { getQuestions, SAMPLE_EXAMS } from "@/app/lib/data";
-import { saveResult } from "@/app/lib/storage";
+import { saveResult, notifyTeachersOfSubmission } from "@/app/lib/storage";
 import type { Question, LapTime } from "@/app/lib/types";
 import { GRADE_SECTIONS } from "@/app/lib/types";
 import { ArrowLeft, ArrowRight, Check, Clock, Send } from "lucide-react";
@@ -136,6 +136,15 @@ export default function QuizPage() {
       lapTimes: lapTimes.length > 0 ? lapTimes : undefined,
       sectionScores,
     });
+
+    // 先生に通知
+    notifyTeachersOfSubmission(
+      user.id,
+      user.displayName,
+      exam.title,
+      resultId,
+      percentage,
+    ).catch(() => {/* 通知失敗は無視 */});
 
     if (!isPdfMode) {
       router.push(`/result/${resultId}`);

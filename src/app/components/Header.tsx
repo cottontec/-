@@ -1,11 +1,25 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/app/lib/auth-context";
-import { LogOut, Home, History, BarChart3, GraduationCap, Bookmark } from "lucide-react";
+import { getUnreadCount } from "@/app/lib/storage";
+import { LogOut, Home, History, BarChart3, GraduationCap, Bookmark, Bell } from "lucide-react";
 
 export default function Header() {
   const { user, signOut } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    const check = async () => {
+      setUnreadCount(await getUnreadCount(user.id));
+    };
+    check();
+    // 30秒ごとにチェック
+    const interval = setInterval(check, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   return (
     <header className="border-b bg-white">
@@ -31,6 +45,15 @@ export default function Header() {
               <Link href="/bookmarks" className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
                 <Bookmark size={16} />
                 <span className="hidden sm:inline">保存</span>
+              </Link>
+              {/* 通知ベル */}
+              <Link href="/notifications" className="relative flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
+                <Bell size={16} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
               </Link>
               {user.role === "teacher" && (
                 <Link href="/teacher" className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">

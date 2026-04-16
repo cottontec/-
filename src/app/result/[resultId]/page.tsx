@@ -81,9 +81,14 @@ export default function ResultPage() {
           <p className="mt-2 text-sm text-gray-500">所要時間: {formatTime(result.timeSpentSeconds)}</p>
           <div className="mt-6 flex justify-center gap-4">
             {exam && (
-              <Link href={`/quiz/${exam.id}`} className="flex items-center gap-1 rounded-md border px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                <RotateCcw size={16} /> もう一度挑戦
-              </Link>
+              <>
+                <Link href={`/quiz/${exam.id}`} className="flex items-center gap-1 rounded-md border px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                  <RotateCcw size={16} /> もう一度挑戦
+                </Link>
+                <Link href={`/exams/${exam.id}/explanation`} className="flex items-center gap-1 rounded-md border px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                  解説を見る
+                </Link>
+              </>
             )}
             <Link href="/" className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">ホームに戻る</Link>
           </div>

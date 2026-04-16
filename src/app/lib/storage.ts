@@ -1,6 +1,6 @@
 "use client";
 
-import type { QuizResult, UserProfile, CounselingNote } from "./types";
+import type { QuizResult, UserProfile, CounselingNote, AppNotification, ExamExplanation, TeachingPoint } from "./types";
 
 /**
  * Returns true if Supabase environment variables are configured
@@ -328,4 +328,113 @@ export async function saveCounselingNote(note: CounselingNote): Promise<void> {
   const all = lsGet<CounselingNote[]>(LS_COUNSELING_KEY) ?? [];
   all.unshift(note);
   lsSet(LS_COUNSELING_KEY, all);
+}
+
+// ---------------------------------------------------------------------------
+// 通知
+// ---------------------------------------------------------------------------
+
+const LS_NOTIFICATIONS_KEY = "eiken_notifications";
+
+export async function getNotifications(userId: string): Promise<AppNotification[]> {
+  const all = lsGet<AppNotification[]>(LS_NOTIFICATIONS_KEY) ?? [];
+  return all
+    .filter((n) => n.recipientId === userId)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+export async function getUnreadCount(userId: string): Promise<number> {
+  const notes = await getNotifications(userId);
+  return notes.filter((n) => !n.read).length;
+}
+
+export async function addNotification(notification: AppNotification): Promise<void> {
+  const all = lsGet<AppNotification[]>(LS_NOTIFICATIONS_KEY) ?? [];
+  all.unshift(notification);
+  lsSet(LS_NOTIFICATIONS_KEY, all);
+}
+
+export async function markNotificationRead(notificationId: string): Promise<void> {
+  const all = lsGet<AppNotification[]>(LS_NOTIFICATIONS_KEY) ?? [];
+  const idx = all.findIndex((n) => n.id === notificationId);
+  if (idx >= 0) { all[idx].read = true; lsSet(LS_NOTIFICATIONS_KEY, all); }
+}
+
+export async function markAllNotificationsRead(userId: string): Promise<void> {
+  const all = lsGet<AppNotification[]>(LS_NOTIFICATIONS_KEY) ?? [];
+  all.forEach((n) => { if (n.recipientId === userId) n.read = true; });
+  lsSet(LS_NOTIFICATIONS_KEY, all);
+}
+
+/** 生徒が提出したときに先生へ通知を送る */
+export async function notifyTeachersOfSubmission(
+  studentId: string,
+  studentName: string,
+  examTitle: string,
+  resultId: string,
+  percentage: number,
+): Promise<void> {
+  // 先生のクラスを探して通知
+  const classesRaw = localStorage.getItem("eiken_classes");
+  if (!classesRaw) return;
+  const classes = JSON.parse(classesRaw) as { id: string; teacherId: string }[];
+
+  const notifiedTeachers = new Set<string>();
+
+  for (const cls of classes) {
+    const membersKey = `eiken_members_${cls.id}`;
+    const members = lsGet<{ studentId: string }[]>(membersKey) ?? [];
+    const isMember = members.some((m) => m.studentId === studentId);
+    if (isMember && !notifiedTeachers.has(cls.teacherId)) {
+      notifiedTeachers.add(cls.teacherId);
+      await addNotification({
+        id: `notif-${new Date().getTime()}-${cls.teacherId}`,
+        recipientId: cls.teacherId,
+        type: "submission",
+        title: "過去問提出",
+        message: `${studentName}さんが「${examTitle}」を提出しました（${percentage}%）`,
+        link: `/teacher/student/${studentId}`,
+        read: false,
+        createdAt: new Date().toISOString(),
+      });
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 解説コンテンツ
+// ---------------------------------------------------------------------------
+
+const LS_EXPLANATIONS_KEY = "eiken_explanations";
+
+export async function getExplanation(examId: string): Promise<ExamExplanation | null> {
+  const all = lsGet<ExamExplanation[]>(LS_EXPLANATIONS_KEY) ?? [];
+  return all.find((e) => e.examId === examId) ?? null;
+}
+
+export async function saveExplanation(explanation: ExamExplanation): Promise<void> {
+  const all = lsGet<ExamExplanation[]>(LS_EXPLANATIONS_KEY) ?? [];
+  const idx = all.findIndex((e) => e.examId === explanation.examId);
+  if (idx >= 0) all[idx] = explanation;
+  else all.push(explanation);
+  lsSet(LS_EXPLANATIONS_KEY, all);
+}
+
+// ---------------------------------------------------------------------------
+// 指導ポイント（先生のみ）
+// ---------------------------------------------------------------------------
+
+const LS_TEACHING_POINTS_KEY = "eiken_teaching_points";
+
+export async function getTeachingPoint(examId: string): Promise<TeachingPoint | null> {
+  const all = lsGet<TeachingPoint[]>(LS_TEACHING_POINTS_KEY) ?? [];
+  return all.find((t) => t.examId === examId) ?? null;
+}
+
+export async function saveTeachingPoint(point: TeachingPoint): Promise<void> {
+  const all = lsGet<TeachingPoint[]>(LS_TEACHING_POINTS_KEY) ?? [];
+  const idx = all.findIndex((t) => t.examId === point.examId);
+  if (idx >= 0) all[idx] = point;
+  else all.push(point);
+  lsSet(LS_TEACHING_POINTS_KEY, all);
 }
