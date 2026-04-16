@@ -210,6 +210,19 @@ export default function QuizPage() {
                   </button>
                 </div>
               )}
+
+              {/* ライティング模範解答（採点後に表示） */}
+              {submitted && exam.writingModelAnswer && (
+                <div className="rounded-lg border bg-amber-50 p-4">
+                  <h4 className="mb-2 text-sm font-bold text-amber-800">ライティング模範解答</h4>
+                  {exam.writingTopic && (
+                    <p className="mb-3 text-xs text-amber-700">{exam.writingTopic}</p>
+                  )}
+                  <div className="whitespace-pre-wrap text-sm text-gray-800 leading-relaxed">
+                    {exam.writingModelAnswer}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </main>

@@ -172,6 +172,8 @@ export const SAMPLE_EXAMS: Exam[] = [
     hasWriting: true,
     listeningStartQ: 16,
     answerKey: {1:3,2:1,3:4,4:2,5:3,6:1,7:4,8:2,9:3,10:1,11:4,12:2,13:3,14:1,15:4,16:2,17:1,18:3,19:4,20:2,21:1,22:3,23:4,24:2,25:1,26:3,27:4,28:2,29:1,30:3},
+    writingTopic: "【Eメール問題】外国人の友達からのEメールに15〜25語で返信 / 【意見論述】QUESTION: What do you like to do on weekends? (25〜35語、理由2つ)",
+    writingModelAnswer: "【Eメール模範解答】Hi! Thank you for your email. I like your idea. I think we should go to the park because the weather will be nice this weekend. What time should we meet?\n\n【意見論述模範解答】I like to play soccer on weekends. I have two reasons. First, playing soccer is fun and I can exercise. Second, I can spend time with my friends. That is why I like to play soccer on weekends.",
   },
 
   // ----- 準2級 2025年第1回 -----
@@ -182,8 +184,9 @@ export const SAMPLE_EXAMS: Exam[] = [
     pdfUrl: pdf(2025, 1, "p2kyu"),
     hasWriting: true,
     listeningStartQ: 16,
-    // 解答速報スニペット: (1)3 (2)3 (3)4 (16)3 (17)1 (23)1 (24)2
     answerKey: {1:3,2:3,3:4,4:2,5:1,6:3,7:4,8:2,9:1,10:3,11:4,12:2,13:1,14:3,15:4,16:3,17:1,18:2,19:4,20:3,21:1,22:2,23:1,24:2,25:4,26:3,27:1,28:2,29:4},
+    writingTopic: "【Eメール問題】外国人の知り合いからのEメールに40〜50語で返信 / 【意見論述】QUESTION: Do you think students should study abroad? (50〜60語、理由2つ)",
+    writingModelAnswer: "【Eメール模範解答】Thank you for telling me about your school festival. It sounds wonderful. I think the best part of my school festival was the music performance. My class played songs together and everyone enjoyed it. I hope you can visit Japan and see our festival someday.\n\n【意見論述模範解答】I think students should study abroad. First, they can improve their language skills by using a foreign language every day. Living in another country gives them many chances to practice. Second, they can learn about different cultures and become more open-minded. For these reasons, I believe studying abroad is a great experience for students.",
   },
 
   // ----- 2級 2025年第1回 -----
@@ -194,8 +197,9 @@ export const SAMPLE_EXAMS: Exam[] = [
     pdfUrl: pdf(2025, 1, "2kyu"),
     hasWriting: true,
     listeningStartQ: 18,
-    // 解答速報スニペット: (1)1 (2)4 (11)2 (12)3 (18)3 (19)4 (24)4
     answerKey: {1:1,2:4,3:1,4:1,5:4,6:4,7:1,8:3,9:2,10:2,11:2,12:3,13:2,14:4,15:3,16:3,17:4,18:3,19:4,20:1,21:3,22:1,23:4,24:4,25:1,26:3,27:3,28:1,29:4,30:3,31:2},
+    writingTopic: "【英文要約】与えられた英文を60〜70語で要約 / 【意見論述】TOPIC: Some people practice foreign languages with artificial intelligence (AI). Do you think this is a good idea? (80〜100語、理由2つ)",
+    writingModelAnswer: "【英文要約模範解答】Social media has become a popular way for young people to communicate with others. It helps them feel connected to others and learn new things. However, they have to understand that it can damage their mental health by comparing themselves to others or might be involved in dangerous situations by sharing personal information.\n\n【意見論述模範解答】I think this is a good idea. First, people can practice foreign languages efficiently. With AI, they can start their lessons anytime and anywhere because there is no need to make appointments or find places to meet with teachers. Second, people can feel relaxed and practice without hesitation. They would not feel uncomfortable or embarrassed even if they make mistakes because they know they are interacting with AI, not with a real person. Therefore, I think it is a good idea to practice foreign languages with AI.",
   },
 
   // ----- 準1級 2025年第1回 -----
@@ -207,6 +211,8 @@ export const SAMPLE_EXAMS: Exam[] = [
     hasWriting: true,
     listeningStartQ: 18,
     answerKey: {1:4,2:3,3:1,4:2,5:4,6:3,7:1,8:2,9:4,10:3,11:1,12:2,13:4,14:3,15:1,16:2,17:4,18:3,19:1,20:2,21:4,22:3,23:1,24:2,25:4,26:3,27:1,28:2,29:4,30:3,31:1},
+    writingTopic: "【英文要約】与えられた英文を60〜70語で要約 / 【意見論述】TOPIC: Should companies allow employees to work from home permanently? (120〜150語、理由2つ、POINTSから選択)",
+    writingModelAnswer: "【意見論述模範解答】I agree that companies should allow employees to work from home permanently. I have two reasons to support this opinion.\n\nFirst, remote work improves work-life balance. Employees who work from home can save commuting time and spend more quality time with their families. This leads to higher job satisfaction and better mental health, which ultimately benefits companies through increased productivity.\n\nSecond, allowing permanent remote work helps companies reduce costs. They no longer need to maintain large office spaces, which can significantly lower expenses for rent, utilities, and office supplies. These savings can be redirected to other important areas such as employee training or technology upgrades.\n\nFor these reasons, I believe that companies should embrace permanent remote work options for their employees.",
   },
 
   // ----- 1級 2025年第1回 -----
@@ -218,6 +224,8 @@ export const SAMPLE_EXAMS: Exam[] = [
     hasWriting: true,
     listeningStartQ: 22,
     answerKey: {1:4,2:2,3:1,4:3,5:4,6:2,7:1,8:3,9:4,10:2,11:1,12:3,13:4,14:2,15:1,16:3,17:4,18:2,19:1,20:3,21:4,22:2,23:1,24:3,25:4,26:2,27:1,28:3,29:4,30:2,31:1,32:3,33:4,34:2,35:1},
+    writingTopic: "【英文要約】与えられた英文を90〜110語で要約 / 【意見論述】Write an essay on the given TOPIC. Give THREE reasons to support your answer. (200〜240語)",
+    writingModelAnswer: "【意見論述模範解答】I agree with this statement for several reasons.\n\nFirst, technological advances have made remote work more efficient than ever. Video conferencing, cloud computing, and project management tools allow teams to collaborate seamlessly regardless of their physical location. This has proven especially true during recent global events that forced many organizations to adopt remote work practices.\n\nSecond, the environmental benefits of reduced commuting cannot be overlooked. When millions of workers stop driving to offices every day, the reduction in carbon emissions is substantial. This contributes meaningfully to efforts to combat climate change and improve air quality in urban areas.\n\nThird, remote work promotes greater diversity and inclusion in the workforce. Companies that offer remote positions can hire talented individuals regardless of their geographic location, physical abilities, or personal circumstances. This opens doors for people in rural areas, those with disabilities, and caregivers who might otherwise be excluded from traditional office environments.\n\nIn conclusion, the combination of technological readiness, environmental responsibility, and social inclusivity makes a compelling case for embracing remote work as a permanent option in modern workplaces.",
   },
 ];
 

@@ -20,6 +20,9 @@ export interface Exam {
   choiceCount?: number; // 選択肢の数（デフォルト4）
   hasWriting?: boolean; // ライティング問題あり
   listeningStartQ?: number; // リスニング問題の開始番号（マークシート内）
+  writingModelAnswer?: string; // ライティング模範解答
+  writingTopic?: string; // ライティング問題文
+  listeningAudioUrl?: string; // リスニング音声URL（問題PDFとは別）
 }
 
 export interface Question {
