@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/app/lib/auth-context";
 import { getUnreadCount } from "@/app/lib/storage";
-import { LogOut, Home, History, BarChart3, GraduationCap, Bookmark, Bell } from "lucide-react";
+import { LogOut, Home, History, BarChart3, GraduationCap, Bookmark, Bell, ScanLine } from "lucide-react";
 
 export default function Header() {
   const { user, signOut } = useAuth();
@@ -34,6 +34,10 @@ export default function Header() {
           </Link>
           {user && (
             <>
+              <Link href="/scan" className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
+                <ScanLine size={16} />
+                <span className="hidden sm:inline">紙採点</span>
+              </Link>
               <Link href="/history" className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
                 <History size={16} />
                 <span className="hidden sm:inline">履歴</span>
