@@ -42,7 +42,7 @@ export default function PdfViewer({ src, title }: PdfViewerProps) {
       {/* PDF表示 */}
       <iframe
         src={src}
-        className={`w-full border-0 ${expanded ? "h-[calc(100%-40px)]" : "h-[500px]"}`}
+        className={`w-full border-0 ${expanded ? "h-[calc(100%-40px)]" : "h-[calc(100vh-180px)]"}`}
         title={title ?? "問題PDF"}
       />
 

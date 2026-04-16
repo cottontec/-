@@ -135,10 +135,10 @@ export default function QuizPage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <main className="mx-auto max-w-6xl px-4 py-6">
-          <h2 className="mb-4 text-xl font-bold text-gray-900">{exam.title}</h2>
+        <main className="mx-auto max-w-[1600px] px-3 py-4">
+          <h2 className="mb-3 text-lg font-bold text-gray-900">{exam.title}</h2>
 
-          <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+          <div className="grid gap-4 lg:grid-cols-[4fr_1fr]">
             {/* 左: PDF + 音声 */}
             <div className="space-y-4">
               {exam.audioUrl && (

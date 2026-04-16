@@ -47,25 +47,25 @@ export default function MarkSheet({
   return (
     <div className="rounded-lg border bg-white p-4">
       {/* ヘッダー */}
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-bold text-gray-900">マークシート</h3>
-        <span className="text-sm text-gray-500">
-          回答済み: {answeredCount} / {questionCount}
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="text-sm font-bold text-gray-900">マークシート</h3>
+        <span className="text-xs text-gray-500">
+          {answeredCount}/{questionCount}
         </span>
       </div>
 
       {/* マークシート本体 */}
-      <div className="space-y-1">
+      <div className="space-y-0.5 max-h-[calc(100vh-280px)] overflow-y-auto">
         {/* ヘッダー行 */}
-        <div className="flex items-center gap-1">
-          <div className="w-12 text-center text-xs font-medium text-gray-500">問題</div>
+        <div className="sticky top-0 z-10 flex items-center gap-0.5 bg-white pb-1">
+          <div className="w-8 text-center text-[10px] font-medium text-gray-500">No.</div>
           {Array.from({ length: choiceCount }, (_, i) => (
-            <div key={i} className="flex h-8 w-10 items-center justify-center text-xs font-bold text-gray-600">
+            <div key={i} className="flex h-6 w-7 items-center justify-center text-[10px] font-bold text-gray-600">
               {i + 1}
             </div>
           ))}
           {results && (
-            <div className="ml-2 w-8 text-center text-xs font-medium text-gray-500">結果</div>
+            <div className="ml-1 w-6 text-center text-[10px] font-medium text-gray-500"></div>
           )}
         </div>
 
@@ -79,7 +79,7 @@ export default function MarkSheet({
           return (
             <div
               key={qNum}
-              className={`flex items-center gap-1 rounded px-1 py-0.5 ${
+              className={`flex items-center gap-0.5 rounded px-0.5 py-px ${
                 results
                   ? isCorrect
                     ? "bg-green-50"
@@ -90,7 +90,7 @@ export default function MarkSheet({
               }`}
             >
               {/* 問題番号 */}
-              <div className="w-12 text-center text-sm font-medium text-gray-700">
+              <div className="w-8 text-center text-xs font-medium text-gray-700">
                 {qNum}
               </div>
 
@@ -122,7 +122,7 @@ export default function MarkSheet({
                     key={choiceNum}
                     onClick={() => handleMark(qNum, choiceNum)}
                     disabled={readOnly}
-                    className={`flex h-8 w-10 items-center justify-center rounded-full border-2 text-xs font-bold transition ${markClass} ${
+                    className={`flex h-6 w-7 items-center justify-center rounded-full border-[1.5px] text-[10px] font-bold transition ${markClass} ${
                       readOnly ? "cursor-default" : "cursor-pointer"
                     }`}
                   >
@@ -133,7 +133,7 @@ export default function MarkSheet({
 
               {/* 採点結果 */}
               {results && (
-                <div className="ml-2 w-8 text-center text-lg">
+                <div className="ml-1 w-6 text-center text-sm">
                   {isCorrect ? "○" : "×"}
                 </div>
               )}
