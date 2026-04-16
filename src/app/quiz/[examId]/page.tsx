@@ -5,11 +5,12 @@ import { useParams, useRouter } from "next/navigation";
 import Header from "@/app/components/Header";
 import AudioPlayer from "@/app/components/AudioPlayer";
 import PdfViewer from "@/app/components/PdfViewer";
+import MarkSheet from "@/app/components/MarkSheet";
 import { useAuth } from "@/app/lib/auth-context";
 import { getQuestions, SAMPLE_EXAMS } from "@/app/lib/data";
 import { saveResult } from "@/app/lib/storage";
 import type { Question } from "@/app/lib/types";
-import { ArrowLeft, ArrowRight, Check, Clock } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Clock, Send } from "lucide-react";
 
 export default function QuizPage() {
   const { examId } = useParams();
@@ -17,43 +18,86 @@ export default function QuizPage() {
   const { user } = useAuth();
   const id = examId as string;
 
+  const exam = SAMPLE_EXAMS.find((e) => e.id === id);
+  const isPdfMode = !!exam?.pdfUrl || !!exam?.answerKey;
+
+  // 従来モード用
   const questions: Question[] = useMemo(() => getQuestions(id), [id]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [textAnswers, setTextAnswers] = useState<Record<string, string>>({});
+
+  // マークシートモード用
+  const [markAnswers, setMarkAnswers] = useState<Record<number, number>>({});
+  const [markResults, setMarkResults] = useState<Record<number, boolean> | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+
   const [submitting, setSubmitting] = useState(false);
   const startTimeRef = useRef(0);
 
-  const exam = SAMPLE_EXAMS.find((e) => e.id === id);
-
-  const currentQuestion = questions[currentIndex];
-  const totalQuestions = questions.length;
-  const answeredCount = Object.keys(answers).length;
-
   const getTimestamp = () => new Date().getTime();
 
-  const handleSelect = (questionId: string, label: string) => {
+  const currentQuestion = questions[currentIndex];
+  const totalQuestions = isPdfMode ? (exam?.questionCount ?? 0) : questions.length;
+  const answeredCount = isPdfMode
+    ? Object.keys(markAnswers).length
+    : Object.keys(textAnswers).length;
+
+  const handleTextSelect = (questionId: string, label: string) => {
     if (startTimeRef.current === 0) startTimeRef.current = getTimestamp();
-    setAnswers((prev) => ({ ...prev, [questionId]: label }));
+    setTextAnswers((prev) => ({ ...prev, [questionId]: label }));
+  };
+
+  const handleMarkChange = (answers: Record<number, number>) => {
+    if (startTimeRef.current === 0) startTimeRef.current = getTimestamp();
+    setMarkAnswers(answers);
   };
 
   const handleSubmit = async () => {
-    if (submitting || !user) return;
+    if (submitting || !user || !exam) return;
     setSubmitting(true);
 
-    const totalTimeSeconds = Math.round((getTimestamp() - startTimeRef.current) / 1000);
+    const totalTimeSeconds = startTimeRef.current > 0
+      ? Math.round((getTimestamp() - startTimeRef.current) / 1000)
+      : 0;
+
     let score = 0;
-    let totalPoints = 0;
+    let totalPoints = totalQuestions;
 
-    const userAnswers = questions.map((q) => {
-      const selected = answers[q.id] ?? null;
-      const isCorrect = selected === q.correctAnswer;
-      if (isCorrect) score += q.points;
-      totalPoints += q.points;
-      return { questionId: q.id, selectedAnswer: selected, isCorrect };
-    });
+    if (isPdfMode && exam.answerKey) {
+      // マークシート採点
+      const results: Record<number, boolean> = {};
+      for (let i = 1; i <= totalQuestions; i++) {
+        const isCorrect = markAnswers[i] === exam.answerKey[i];
+        results[i] = isCorrect;
+        if (isCorrect) score++;
+      }
+      setMarkResults(results);
+      setSubmitted(true);
+    } else {
+      // 従来モード採点
+      questions.forEach((q) => {
+        const selected = textAnswers[q.id] ?? null;
+        if (selected === q.correctAnswer) score += q.points;
+      });
+      totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
+    }
 
-    const percentage = totalPoints > 0 ? Math.round((score / totalPoints) * 10000) / 100 : 0;
-    const resultId = `${id}-${Date.now()}`;
+    const percentage = totalPoints > 0
+      ? Math.round((score / totalPoints) * 10000) / 100
+      : 0;
+    const resultId = `${id}-${getTimestamp()}`;
+
+    const userAnswers = isPdfMode
+      ? Array.from({ length: totalQuestions }, (_, i) => ({
+          questionId: `${id}-q${i + 1}`,
+          selectedAnswer: markAnswers[i + 1] ? String(markAnswers[i + 1]) : null,
+          isCorrect: exam?.answerKey ? markAnswers[i + 1] === exam.answerKey[i + 1] : false,
+        }))
+      : questions.map((q) => ({
+          questionId: q.id,
+          selectedAnswer: textAnswers[q.id] ?? null,
+          isCorrect: (textAnswers[q.id] ?? null) === q.correctAnswer,
+        }));
 
     await saveResult({
       id: resultId,
@@ -67,10 +111,97 @@ export default function QuizPage() {
       completedAt: new Date().toISOString(),
     });
 
-    router.push(`/result/${resultId}`);
+    if (!isPdfMode) {
+      router.push(`/result/${resultId}`);
+    }
+    setSubmitting(false);
   };
 
-  if (!exam || questions.length === 0) {
+  if (!exam) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center py-32 text-gray-500">
+          試験が見つかりませんでした
+        </div>
+      </div>
+    );
+  }
+
+  // ===== PDF + マークシートモード =====
+  if (isPdfMode) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="mx-auto max-w-6xl px-4 py-6">
+          <h2 className="mb-4 text-xl font-bold text-gray-900">{exam.title}</h2>
+
+          <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+            {/* 左: PDF + 音声 */}
+            <div className="space-y-4">
+              {exam.audioUrl && (
+                <AudioPlayer src={exam.audioUrl} title="リスニング音声" />
+              )}
+              {exam.pdfUrl && (
+                <PdfViewer src={exam.pdfUrl} title="問題用紙" />
+              )}
+              {!exam.pdfUrl && (
+                <div className="rounded-lg border bg-white py-20 text-center text-gray-400">
+                  PDF URLが設定されていません
+                </div>
+              )}
+            </div>
+
+            {/* 右: マークシート */}
+            <div className="space-y-4">
+              <MarkSheet
+                questionCount={exam.questionCount}
+                choiceCount={exam.choiceCount ?? 4}
+                onAnswersChange={handleMarkChange}
+                results={markResults}
+                answerKey={submitted ? exam.answerKey : undefined}
+                readOnly={submitted}
+                initialAnswers={markAnswers}
+              />
+
+              {!submitted ? (
+                <button
+                  onClick={handleSubmit}
+                  disabled={submitting || answeredCount === 0}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-lg font-bold text-white hover:bg-green-700 disabled:opacity-50"
+                >
+                  <Send size={20} />
+                  {submitting ? "採点中..." : "採点する"}
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  <button
+                    onClick={() => {
+                      setMarkAnswers({});
+                      setMarkResults(null);
+                      setSubmitted(false);
+                    }}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border px-6 py-3 text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    もう一度挑戦
+                  </button>
+                  <button
+                    onClick={() => router.push("/")}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm text-white hover:bg-blue-700"
+                  >
+                    ホームに戻る
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // ===== 従来の問題モード =====
+  if (questions.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -88,12 +219,8 @@ export default function QuizPage() {
         {/* 音声・PDF */}
         {(exam.audioUrl || exam.pdfUrl) && (
           <div className="mb-6 space-y-4">
-            {exam.audioUrl && (
-              <AudioPlayer src={exam.audioUrl} title={`${exam.title} — リスニング音声`} />
-            )}
-            {exam.pdfUrl && (
-              <PdfViewer src={exam.pdfUrl} title={`${exam.title} — 問題PDF`} />
-            )}
+            {exam.audioUrl && <AudioPlayer src={exam.audioUrl} title="リスニング音声" />}
+            {exam.pdfUrl && <PdfViewer src={exam.pdfUrl} title="問題PDF" />}
           </div>
         )}
 
@@ -115,7 +242,7 @@ export default function QuizPage() {
               key={q.id} onClick={() => setCurrentIndex(i)}
               className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium transition ${
                 i === currentIndex ? "bg-blue-600 text-white"
-                : answers[q.id] ? "bg-blue-100 text-blue-700"
+                : textAnswers[q.id] ? "bg-blue-100 text-blue-700"
                 : "bg-gray-200 text-gray-600"
               }`}
             >
@@ -131,11 +258,11 @@ export default function QuizPage() {
             <p className="mb-6 whitespace-pre-wrap text-lg text-gray-900">{currentQuestion.text}</p>
             <div className="space-y-3">
               {currentQuestion.choices.map((choice) => {
-                const isSelected = answers[currentQuestion.id] === choice.label;
+                const isSelected = textAnswers[currentQuestion.id] === choice.label;
                 return (
                   <button
                     key={choice.label}
-                    onClick={() => handleSelect(currentQuestion.id, choice.label)}
+                    onClick={() => handleTextSelect(currentQuestion.id, choice.label)}
                     className={`flex w-full items-center gap-3 rounded-md border px-4 py-3 text-left transition ${
                       isSelected ? "border-blue-500 bg-blue-50 text-blue-900" : "border-gray-200 hover:bg-gray-50"
                     }`}

@@ -16,6 +16,8 @@ export interface Exam {
   timeLimitMinutes: number | null;
   audioUrl?: string;   // リスニング音声URL
   pdfUrl?: string;     // 問題PDF URL
+  answerKey?: Record<number, number>; // 正解データ {問題番号: 正解の選択肢番号}
+  choiceCount?: number; // 選択肢の数（デフォルト4）
 }
 
 export interface Question {

@@ -51,8 +51,11 @@ export default function GradePage() {
                         <div className="flex items-center gap-3">
                           <FileText size={18} className="text-gray-400" />
                           <div>
-                            <p className="font-medium text-gray-900">
+                            <p className="flex items-center gap-2 font-medium text-gray-900">
                               {SECTION_LABELS[exam.section] ?? exam.section}
+                              {exam.answerKey && (
+                                <span className="rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700">マークシート</span>
+                              )}
                             </p>
                             <p className="text-sm text-gray-500">
                               {exam.questionCount}問

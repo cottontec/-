@@ -10,6 +10,23 @@ export const SAMPLE_EXAMS: Exam[] = [
   // 3級
   { id: "3kyu-2024-1", grade: "3kyu", year: 2024, session: 1, section: "reading", title: "3級 2024年 第1回 リーディング", questionCount: 5, timeLimitMinutes: 50 },
   { id: "3kyu-2023-3", grade: "3kyu", year: 2023, session: 3, section: "reading", title: "3級 2023年 第3回 リーディング", questionCount: 5, timeLimitMinutes: 50 },
+  // 3級 PDF+マークシート形式（デモ）
+  {
+    id: "3kyu-2024-1-pdf",
+    grade: "3kyu",
+    year: 2024,
+    session: 1,
+    section: "reading",
+    title: "3級 2024年 第1回【PDF+マークシート】",
+    questionCount: 30,
+    timeLimitMinutes: 50,
+    pdfUrl: "", // ← ここに英検公式PDFのURLを設定
+    answerKey: {
+      1:3, 2:1, 3:4, 4:2, 5:1, 6:3, 7:2, 8:4, 9:1, 10:3,
+      11:2, 12:4, 13:1, 14:3, 15:2, 16:1, 17:4, 18:3, 19:2, 20:1,
+      21:3, 22:2, 23:4, 24:1, 25:3, 26:2, 27:1, 28:4, 29:3, 30:2,
+    },
+  },
   // 準2級
   { id: "pre2kyu-2024-1", grade: "pre2kyu", year: 2024, session: 1, section: "reading", title: "準2級 2024年 第1回 リーディング", questionCount: 5, timeLimitMinutes: 75 },
   // 2級
