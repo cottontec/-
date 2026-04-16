@@ -6,6 +6,7 @@ import Header from "@/app/components/Header";
 import AudioPlayer from "@/app/components/AudioPlayer";
 import PdfViewer from "@/app/components/PdfViewer";
 import MarkSheet from "@/app/components/MarkSheet";
+import WritingAnswer from "@/app/components/WritingAnswer";
 import { useAuth } from "@/app/lib/auth-context";
 import { getQuestions, SAMPLE_EXAMS } from "@/app/lib/data";
 import { saveResult } from "@/app/lib/storage";
@@ -32,6 +33,7 @@ export default function QuizPage() {
   const [submitted, setSubmitted] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
+  const [writingAnswer, setWritingAnswer] = useState<{ text: string; imageDataUrl: string | null }>({ text: "", imageDataUrl: null });
   const startTimeRef = useRef(0);
 
   const getTimestamp = () => new Date().getTime();
@@ -152,8 +154,14 @@ export default function QuizPage() {
               )}
             </div>
 
-            {/* 右: マークシート */}
+            {/* 右: マークシート + ライティング */}
             <div className="space-y-4">
+              {exam.listeningStartQ && (
+                <p className="text-xs text-gray-500">
+                  問1〜{exam.listeningStartQ - 1}: 筆記 / 問{exam.listeningStartQ}〜{exam.questionCount}: リスニング
+                </p>
+              )}
+
               <MarkSheet
                 questionCount={exam.questionCount}
                 choiceCount={exam.choiceCount ?? 4}
@@ -163,6 +171,15 @@ export default function QuizPage() {
                 readOnly={submitted}
                 initialAnswers={markAnswers}
               />
+
+              {exam.hasWriting && (
+                <WritingAnswer
+                  onAnswerChange={setWritingAnswer}
+                  readOnly={submitted}
+                  initialText={writingAnswer.text}
+                  initialImage={writingAnswer.imageDataUrl}
+                />
+              )}
 
               {!submitted ? (
                 <button
