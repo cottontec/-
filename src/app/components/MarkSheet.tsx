@@ -11,11 +11,8 @@ interface MarkSheetProps {
   answerKey?: Record<number, number>;
   readOnly?: boolean;
   initialAnswers?: Record<number, number>;
-  /** 大問構成（ラップタイム記録用） */
   examSections?: ExamSection[];
-  /** ラップタイムが記録されたとき */
   onLapTimesChange?: (lapTimes: LapTime[]) => void;
-  /** 採点後に表示するラップタイム */
   lapTimes?: LapTime[];
 }
 
@@ -40,11 +37,7 @@ export default function MarkSheet({
 
   const handleMark = (question: number, choice: number) => {
     if (readOnly) return;
-
-    // 初回マーク時にタイマー開始
-    if (startTimeRef.current === 0) {
-      startTimeRef.current = getTimestamp();
-    }
+    if (startTimeRef.current === 0) startTimeRef.current = getTimestamp();
 
     const newAnswers = { ...answers };
     if (newAnswers[question] === choice) {
@@ -55,7 +48,6 @@ export default function MarkSheet({
     setAnswers(newAnswers);
     onAnswersChange?.(newAnswers);
 
-    // ラップタイム記録: 大問の最後の問題がマークされたら
     if (examSections && newAnswers[question] !== undefined) {
       const sec = examSections.find((s) => s.endQ === question);
       if (sec && !recordedSectionsRef.current.has(sec.name)) {
@@ -63,14 +55,7 @@ export default function MarkSheet({
         const elapsed = now - startTimeRef.current;
         const prevLap = lapTimesRef.current[lapTimesRef.current.length - 1];
         const duration = prevLap ? elapsed - prevLap.elapsedMs : elapsed;
-
-        const newLap: LapTime = {
-          sectionName: sec.name,
-          startQ: sec.startQ,
-          endQ: sec.endQ,
-          elapsedMs: elapsed,
-          durationMs: duration,
-        };
+        const newLap: LapTime = { sectionName: sec.name, startQ: sec.startQ, endQ: sec.endQ, elapsedMs: elapsed, durationMs: duration };
         lapTimesRef.current = [...lapTimesRef.current, newLap];
         recordedSectionsRef.current.add(sec.name);
         onLapTimesChange?.(lapTimesRef.current);
@@ -79,42 +64,48 @@ export default function MarkSheet({
   };
 
   const answeredCount = Object.keys(answers).length;
-
   const formatMs = (ms: number) => {
     const s = Math.floor(ms / 1000);
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${m}:${sec.toString().padStart(2, "0")}`;
+    return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
   };
 
-  // 大問の境界を判定
   const sectionEndQs = new Set(examSections?.map((s) => s.endQ) ?? []);
   const sectionStartMap = new Map(examSections?.map((s) => [s.startQ, s.name]) ?? []);
 
+  const correctCount = results ? Object.values(results).filter(Boolean).length : 0;
+  const percentage = results ? Math.round((correctCount / questionCount) * 100) : 0;
+
   return (
-    <div className="rounded-lg border bg-white p-3">
+    <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
       {/* ヘッダー */}
-      <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-sm font-bold text-gray-900">マークシート</h3>
-        <span className="text-xs text-gray-500">{answeredCount}/{questionCount}</span>
+      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+        <div>
+          <h3 className="text-sm font-bold text-slate-800">解答用紙</h3>
+          <p className="text-[11px] text-slate-400">マークシート</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="rounded-full bg-slate-100 px-3 py-1">
+            <span className="text-xs font-semibold text-slate-600">{answeredCount}<span className="text-slate-400">/{questionCount}</span></span>
+          </div>
+          {results && (
+            <div className={`rounded-full px-3 py-1 ${percentage >= 70 ? "bg-emerald-100" : percentage >= 50 ? "bg-amber-100" : "bg-red-100"}`}>
+              <span className={`text-sm font-bold ${percentage >= 70 ? "text-emerald-700" : percentage >= 50 ? "text-amber-700" : "text-red-700"}`}>{percentage}%</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* マークシート本体 */}
-      <div className="space-y-0.5 max-h-[calc(100vh-280px)] overflow-y-auto">
+      <div className="max-h-[calc(100vh-300px)] overflow-y-auto px-3 py-2 pdf-scroll">
         {/* ヘッダー行 */}
-        <div className="sticky top-0 z-10 flex items-center gap-0.5 bg-white pb-1">
-          <div className="w-8 text-center text-[10px] font-medium text-gray-500">No.</div>
+        <div className="sticky top-0 z-10 flex items-center gap-[3px] bg-white/95 backdrop-blur-sm pb-1.5 border-b border-slate-100 mb-1">
+          <div className="w-9 text-center text-[10px] font-semibold text-slate-400 uppercase tracking-wider">No</div>
           {Array.from({ length: choiceCount }, (_, i) => (
-            <div key={i} className="flex h-6 w-7 items-center justify-center text-[10px] font-bold text-gray-600">
-              {i + 1}
-            </div>
+            <div key={i} className="flex h-7 w-8 items-center justify-center text-[11px] font-bold text-slate-500">{i + 1}</div>
           ))}
-          {results && (
-            <div className="ml-1 w-6 text-center text-[10px] font-medium text-gray-500"></div>
-          )}
+          {results && <div className="ml-1 w-6" />}
         </div>
 
-        {/* 各問題の行 */}
         {Array.from({ length: questionCount }, (_, qIdx) => {
           const qNum = qIdx + 1;
           const selected = answers[qNum];
@@ -125,35 +116,36 @@ export default function MarkSheet({
 
           return (
             <div key={qNum}>
-              {/* 大問ラベル */}
               {sectionLabel && (
-                <div className="mt-1 mb-0.5 px-1 text-[9px] font-bold text-blue-600 bg-blue-50 rounded py-0.5">
-                  {sectionLabel}
+                <div className="mt-2 mb-1 flex items-center gap-2">
+                  <div className="h-px flex-1 bg-blue-200" />
+                  <span className="text-[9px] font-bold text-blue-600 whitespace-nowrap">{sectionLabel}</span>
+                  <div className="h-px flex-1 bg-blue-200" />
                 </div>
               )}
-              <div
-                className={`flex items-center gap-0.5 rounded px-0.5 py-px ${
-                  results
-                    ? isCorrect ? "bg-green-50" : "bg-red-50"
-                    : qNum % 2 === 0 ? "bg-gray-50" : ""
-                } ${isSectionEnd && !results ? "border-b border-blue-200 pb-1 mb-1" : ""}`}
-              >
-                <div className="w-8 text-center text-xs font-medium text-gray-700">{qNum}</div>
+              <div className={`flex items-center gap-[3px] rounded-md px-1 py-[3px] transition-colors ${
+                results
+                  ? isCorrect ? "bg-emerald-50/60" : "bg-red-50/60"
+                  : selected ? "bg-blue-50/40" : qNum % 2 === 0 ? "bg-slate-50/50" : ""
+              }`}>
+                <div className={`w-9 text-center text-[11px] font-semibold tabular-nums ${results ? (isCorrect ? "text-emerald-600" : "text-red-500") : "text-slate-500"}`}>
+                  {qNum}
+                </div>
                 {Array.from({ length: choiceCount }, (_, cIdx) => {
                   const choiceNum = cIdx + 1;
                   const isSelected = selected === choiceNum;
                   const isCorrectChoice = results && correctAnswer === choiceNum;
 
-                  let markClass = "";
+                  let style = "";
                   if (results) {
-                    if (isSelected && isCorrect) markClass = "bg-green-600 text-white border-green-600";
-                    else if (isSelected && !isCorrect) markClass = "bg-red-500 text-white border-red-500";
-                    else if (isCorrectChoice) markClass = "border-green-600 bg-green-100 text-green-700";
-                    else markClass = "border-gray-300 text-gray-300";
+                    if (isSelected && isCorrect) style = "bg-emerald-500 text-white border-emerald-500 shadow-sm shadow-emerald-200";
+                    else if (isSelected && !isCorrect) style = "bg-red-500 text-white border-red-500 shadow-sm shadow-red-200";
+                    else if (isCorrectChoice) style = "border-emerald-400 bg-emerald-50 text-emerald-600 ring-1 ring-emerald-300";
+                    else style = "border-slate-200 text-slate-200";
                   } else if (isSelected) {
-                    markClass = "bg-gray-900 text-white border-gray-900";
+                    style = "bg-slate-800 text-white border-slate-800 shadow-sm";
                   } else {
-                    markClass = "border-gray-300 text-gray-400 hover:border-gray-500 hover:bg-gray-100";
+                    style = "border-slate-250 text-slate-300 hover:border-slate-400 hover:bg-slate-50 active:bg-slate-100";
                   }
 
                   return (
@@ -161,44 +153,45 @@ export default function MarkSheet({
                       key={choiceNum}
                       onClick={() => handleMark(qNum, choiceNum)}
                       disabled={readOnly}
-                      className={`flex h-6 w-7 items-center justify-center rounded-full border-[1.5px] text-[10px] font-bold transition ${markClass} ${readOnly ? "cursor-default" : "cursor-pointer"}`}
+                      className={`mark-fill flex h-7 w-8 items-center justify-center rounded-full border-[1.5px] text-[10px] font-bold ${style} ${readOnly ? "cursor-default" : "cursor-pointer"}`}
                     >
-                      {isSelected ? choiceNum : "○"}
+                      {isSelected ? choiceNum : ""}
                     </button>
                   );
                 })}
                 {results && (
-                  <div className="ml-1 w-6 text-center text-sm">{isCorrect ? "○" : "×"}</div>
+                  <div className={`ml-1 w-6 text-center text-xs font-bold ${isCorrect ? "text-emerald-500" : "text-red-400"}`}>
+                    {isCorrect ? "○" : "✕"}
+                  </div>
                 )}
               </div>
+              {isSectionEnd && !results && <div className="my-1 h-px bg-slate-200" />}
             </div>
           );
         })}
       </div>
 
-      {/* 採点結果 */}
+      {/* フッター */}
       {results && (
-        <div className="mt-3 flex items-center justify-between border-t pt-2">
-          <div className="text-xs text-gray-600">
-            正解: {Object.values(results).filter(Boolean).length}/{questionCount}
-          </div>
-          <div className="text-base font-bold text-blue-600">
-            {Math.round((Object.values(results).filter(Boolean).length / questionCount) * 100)}%
+        <div className="border-t border-slate-100 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-500">正解 {correctCount}/{questionCount}</span>
+            <span className={`text-lg font-bold ${percentage >= 70 ? "text-emerald-600" : percentage >= 50 ? "text-amber-600" : "text-red-600"}`}>{percentage}%</span>
           </div>
         </div>
       )}
 
-      {/* ラップタイム表示 */}
+      {/* ラップタイム */}
       {displayLapTimes && displayLapTimes.length > 0 && (
-        <div className="mt-3 border-t pt-2">
-          <h4 className="mb-1 text-xs font-bold text-gray-700">通過タイム</h4>
-          <div className="space-y-0.5">
+        <div className="border-t border-slate-100 px-4 py-3">
+          <h4 className="mb-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider">通過タイム</h4>
+          <div className="space-y-1">
             {displayLapTimes.map((lap) => (
-              <div key={lap.sectionName} className="flex items-center justify-between text-[10px]">
-                <span className="text-gray-600 truncate max-w-[120px]">{lap.sectionName}</span>
-                <div className="flex gap-2">
-                  <span className="text-gray-500">{formatMs(lap.elapsedMs)}</span>
-                  <span className="font-bold text-blue-600">({formatMs(lap.durationMs)})</span>
+              <div key={lap.sectionName} className="flex items-center justify-between">
+                <span className="text-[11px] text-slate-600 truncate max-w-[140px]">{lap.sectionName}</span>
+                <div className="flex items-center gap-2 font-mono text-[11px]">
+                  <span className="text-slate-400">{formatMs(lap.elapsedMs)}</span>
+                  <span className="rounded bg-blue-50 px-1.5 py-0.5 font-bold text-blue-600">{formatMs(lap.durationMs)}</span>
                 </div>
               </div>
             ))}

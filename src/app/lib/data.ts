@@ -3,6 +3,7 @@ import type { Grade, Exam, Question } from "./types";
 // === 公式PDF+マークシート形式の過去問 ===
 // PDFは英検公式サイト: https://www.eiken.or.jp/eiken/exam/
 // 正解は解答速報PDF: https://www.eiken.or.jp/eiken/result/answer.html
+// リスニング音声: https://www.eiken.or.jp/eiken/exam/grade_X/ からストリーミング
 // URL規則:
 //   問題PDF: https://www.eiken.or.jp/eiken/exam/kakomon/{year}-{session}-1ji-{grade}.pdf
 //   解答PDF: https://www.eiken.or.jp/eiken/result/pdf/{year}{session}f{grade}.pdf
@@ -10,6 +11,17 @@ import type { Grade, Exam, Question } from "./types";
 const EIKEN_PDF_BASE = "https://www.eiken.or.jp/eiken/exam/kakomon";
 const pdf = (year: number, session: number, grade: string) =>
   `${EIKEN_PDF_BASE}/${year}-${session}-1ji-${grade}.pdf`;
+
+// リスニング音声（各級の過去問ページからリンクされている）
+const LISTENING_PAGE: Record<string, string> = {
+  "5kyu": "https://www.eiken.or.jp/eiken/exam/grade_5/",
+  "4kyu": "https://www.eiken.or.jp/eiken/exam/grade_4/",
+  "3kyu": "https://www.eiken.or.jp/eiken/exam/grade_3/",
+  "p2kyu": "https://www.eiken.or.jp/eiken/exam/grade_p2/",
+  "2kyu": "https://www.eiken.or.jp/eiken/exam/grade_2/",
+  "p1kyu": "https://www.eiken.or.jp/eiken/exam/grade_p1/",
+  "1kyu": "https://www.eiken.or.jp/eiken/exam/grade_1/",
+};
 
 export const SAMPLE_EXAMS: Exam[] = [
   // ========== 5級 ==========

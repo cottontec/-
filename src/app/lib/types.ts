@@ -188,48 +188,55 @@ export const SECTION_LABELS: Record<Section, string> = {
   writing: "ライティング",
 };
 
-/** 英検公式の大問構成（級ごと） */
+/**
+ * 英検公式の大問構成（2024年度リニューアル後）
+ * ※マークシートの問題番号に対応
+ * ※ライティングはマークシート外（別途WritingAnswer）
+ */
 export const GRADE_SECTIONS: Record<Grade, ExamSection[]> = {
+  // 5級: 筆記25問（大問1-3）+ リスニング25問 = 計50問だが、マークシートは25問
   "5kyu": [
     { name: "大問1 短文の語句空所補充", startQ: 1, endQ: 15 },
-    { name: "リスニング第1部", startQ: 16, endQ: 20 },
-    { name: "リスニング第2部", startQ: 21, endQ: 25 },
+    { name: "大問2 会話文の文空所補充", startQ: 16, endQ: 20 },
+    { name: "大問3 日本文付き短文の語句整序", startQ: 21, endQ: 25 },
   ],
+  // 4級: 筆記35問（大問1-4）+ リスニング30問 = 計65問だが、マークシートは35問
   "4kyu": [
     { name: "大問1 短文の語句空所補充", startQ: 1, endQ: 15 },
-    { name: "大問2 会話文の空所補充", startQ: 16, endQ: 20 },
-    { name: "大問3 日本文付き短文", startQ: 21, endQ: 25 },
-    { name: "大問4 長文の内容一致", startQ: 26, endQ: 35 },
+    { name: "大問2 会話文の文空所補充", startQ: 16, endQ: 20 },
+    { name: "大問3 日本文付き短文の語句整序", startQ: 21, endQ: 25 },
+    { name: "大問4 長文の内容一致選択", startQ: 26, endQ: 35 },
   ],
+  // 3級(2024リニューアル): 筆記15問(大問1)+5問(大問2)+9問(大問3)=29問 + Writing2題
   "3kyu": [
     { name: "大問1 短文の語句空所補充", startQ: 1, endQ: 15 },
-    { name: "大問2 会話文の空所補充", startQ: 16, endQ: 20 },
-    { name: "大問3 長文の内容一致", startQ: 21, endQ: 30 },
+    { name: "大問2 会話文の文空所補充", startQ: 16, endQ: 20 },
+    { name: "大問3 長文の内容一致選択", startQ: 21, endQ: 29 },
   ],
+  // 準2級(2024リニューアル): 大問1(15問)+大問2(5問)+大問3A(2問)+大問3B(3問)+大問4(5問)=30問
   "pre2kyu": [
     { name: "大問1 短文の語句空所補充", startQ: 1, endQ: 15 },
-    { name: "大問2 会話文の空所補充", startQ: 16, endQ: 20 },
-    { name: "大問3 長文の空所補充", startQ: 21, endQ: 23 },
-    { name: "大問4 長文の内容一致", startQ: 24, endQ: 29 },
+    { name: "大問2 会話文の文空所補充", startQ: 16, endQ: 20 },
+    { name: "大問3 長文の空所補充", startQ: 21, endQ: 25 },
+    { name: "大問4 長文の内容一致選択", startQ: 26, endQ: 30 },
   ],
+  // 2級(2024リニューアル): 大問1(17問)+大問2(6問)+大問3(8問)=31問 + Writing2題
   "2kyu": [
-    { name: "大問1 短文の語句空所補充", startQ: 1, endQ: 10 },
-    { name: "大問2 長文の空所補充", startQ: 11, endQ: 16 },
-    { name: "大問3 長文の内容一致", startQ: 17, endQ: 25 },
-    { name: "リスニング第1部", startQ: 26, endQ: 31 },
+    { name: "大問1 短文の語句空所補充", startQ: 1, endQ: 17 },
+    { name: "大問2 長文の空所補充", startQ: 18, endQ: 23 },
+    { name: "大問3 長文の内容一致選択", startQ: 24, endQ: 31 },
   ],
+  // 準1級(2024リニューアル): 大問1(18問)+大問2(6問)+大問3(7問)=31問 + Writing2題
   "pre1kyu": [
-    { name: "大問1 短文の語句空所補充", startQ: 1, endQ: 10 },
-    { name: "大問2 長文の空所補充", startQ: 11, endQ: 16 },
-    { name: "大問3 長文の内容一致", startQ: 17, endQ: 25 },
-    { name: "リスニング第1部", startQ: 26, endQ: 31 },
+    { name: "大問1 短文の語句空所補充", startQ: 1, endQ: 18 },
+    { name: "大問2 長文の空所補充", startQ: 19, endQ: 24 },
+    { name: "大問3 長文の内容一致選択", startQ: 25, endQ: 31 },
   ],
+  // 1級(2024リニューアル): 大問1(10問)+大問2(6問)+大問3(10問)=26問 + Writing2題
   "1kyu": [
     { name: "大問1 短文の語句空所補充", startQ: 1, endQ: 10 },
     { name: "大問2 長文の空所補充", startQ: 11, endQ: 16 },
-    { name: "大問3 長文の内容一致", startQ: 17, endQ: 25 },
-    { name: "リスニング Part1", startQ: 26, endQ: 30 },
-    { name: "リスニング Part2", startQ: 31, endQ: 35 },
+    { name: "大問3 長文の内容一致選択", startQ: 17, endQ: 26 },
   ],
 };
 
