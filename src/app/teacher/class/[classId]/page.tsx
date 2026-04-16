@@ -51,7 +51,12 @@ export default function ClassDetailPage() {
         </Link>
 
         <h2 className="mb-2 text-2xl font-bold text-gray-900">{cls?.name ?? "クラス"}</h2>
-        <p className="mb-6 text-sm text-gray-500">招待コード: <span className="font-mono font-bold">{cls?.inviteCode}</span></p>
+        <div className="mb-6 flex items-center gap-4">
+          <p className="text-sm text-gray-500">招待コード: <span className="font-mono font-bold">{cls?.inviteCode}</span></p>
+          <Link href={`/teacher/class-report/${id}`} className="rounded-md bg-green-600 px-3 py-1.5 text-sm text-white hover:bg-green-700">
+            成績一覧表
+          </Link>
+        </div>
 
         {/* 生徒一覧 */}
         <section className="mb-8">
