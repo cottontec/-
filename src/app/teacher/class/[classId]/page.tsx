@@ -59,10 +59,13 @@ export default function ClassDetailPage() {
           {members.length > 0 ? (
             <div className="rounded-lg border bg-white divide-y">
               {members.map((m) => (
-                <div key={m.studentId} className="px-4 py-3 flex items-center justify-between">
+                <Link key={m.studentId} href={`/teacher/student/${m.studentId}`} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition">
                   <span className="text-sm text-gray-900">{m.studentName}</span>
-                  <span className="text-xs text-gray-400">{new Date(m.joinedAt).toLocaleDateString("ja-JP")}</span>
-                </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">{new Date(m.joinedAt).toLocaleDateString("ja-JP")}</span>
+                    <span className="text-xs text-blue-600">詳細 →</span>
+                  </div>
+                </Link>
               ))}
             </div>
           ) : (

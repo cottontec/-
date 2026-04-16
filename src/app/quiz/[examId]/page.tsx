@@ -10,7 +10,8 @@ import WritingAnswer from "@/app/components/WritingAnswer";
 import { useAuth } from "@/app/lib/auth-context";
 import { getQuestions, SAMPLE_EXAMS } from "@/app/lib/data";
 import { saveResult } from "@/app/lib/storage";
-import type { Question } from "@/app/lib/types";
+import type { Question, LapTime } from "@/app/lib/types";
+import { GRADE_SECTIONS } from "@/app/lib/types";
 import { ArrowLeft, ArrowRight, Check, Clock, Send } from "lucide-react";
 
 export default function QuizPage() {
@@ -34,6 +35,9 @@ export default function QuizPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [writingAnswer, setWritingAnswer] = useState<{ text: string; imageDataUrl: string | null }>({ text: "", imageDataUrl: null });
+  const [lapTimes, setLapTimes] = useState<LapTime[]>([]);
+
+  const examSections = exam?.sections ?? (exam ? GRADE_SECTIONS[exam.grade] : undefined);
   const startTimeRef = useRef(0);
 
   const getTimestamp = () => new Date().getTime();
@@ -101,6 +105,24 @@ export default function QuizPage() {
           isCorrect: (textAnswers[q.id] ?? null) === q.correctAnswer,
         }));
 
+    // 大問ごとの正答率を計算
+    const sectionScores = examSections?.map((sec) => {
+      let secScore = 0;
+      let secTotal = 0;
+      for (let i = sec.startQ; i <= sec.endQ; i++) {
+        secTotal++;
+        if (isPdfMode && exam?.answerKey) {
+          if (markAnswers[i] === exam.answerKey[i]) secScore++;
+        }
+      }
+      return {
+        name: sec.name,
+        score: secScore,
+        total: secTotal,
+        percentage: secTotal > 0 ? Math.round((secScore / secTotal) * 100) : 0,
+      };
+    });
+
     await saveResult({
       id: resultId,
       examId: id,
@@ -111,6 +133,8 @@ export default function QuizPage() {
       percentage,
       timeSpentSeconds: totalTimeSeconds,
       completedAt: new Date().toISOString(),
+      lapTimes: lapTimes.length > 0 ? lapTimes : undefined,
+      sectionScores,
     });
 
     if (!isPdfMode) {
@@ -170,6 +194,9 @@ export default function QuizPage() {
                 answerKey={submitted ? exam.answerKey : undefined}
                 readOnly={submitted}
                 initialAnswers={markAnswers}
+                examSections={examSections}
+                onLapTimesChange={setLapTimes}
+                lapTimes={submitted ? lapTimes : undefined}
               />
 
               {exam.hasWriting && (

@@ -1,22 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
+import type { ExamSection, LapTime } from "@/app/lib/types";
 
 interface MarkSheetProps {
-  /** 問題数 */
   questionCount: number;
-  /** 選択肢の数（デフォルト4） */
   choiceCount?: number;
-  /** 解答が変更されたとき */
   onAnswersChange?: (answers: Record<number, number>) => void;
-  /** 採点結果（null=未採点） */
   results?: Record<number, boolean> | null;
-  /** 正解データ（採点後に表示） */
   answerKey?: Record<number, number>;
-  /** 読み取り専用 */
   readOnly?: boolean;
-  /** 初期値 */
   initialAnswers?: Record<number, number>;
+  /** 大問構成（ラップタイム記録用） */
+  examSections?: ExamSection[];
+  /** ラップタイムが記録されたとき */
+  onLapTimesChange?: (lapTimes: LapTime[]) => void;
+  /** 採点後に表示するラップタイム */
+  lapTimes?: LapTime[];
 }
 
 export default function MarkSheet({
@@ -27,31 +27,76 @@ export default function MarkSheet({
   answerKey,
   readOnly = false,
   initialAnswers = {},
+  examSections,
+  onLapTimesChange,
+  lapTimes: displayLapTimes,
 }: MarkSheetProps) {
   const [answers, setAnswers] = useState<Record<number, number>>(initialAnswers);
+  const startTimeRef = useRef(0);
+  const lapTimesRef = useRef<LapTime[]>([]);
+  const recordedSectionsRef = useRef<Set<string>>(new Set());
+
+  const getTimestamp = useCallback(() => new Date().getTime(), []);
 
   const handleMark = (question: number, choice: number) => {
     if (readOnly) return;
+
+    // 初回マーク時にタイマー開始
+    if (startTimeRef.current === 0) {
+      startTimeRef.current = getTimestamp();
+    }
+
     const newAnswers = { ...answers };
     if (newAnswers[question] === choice) {
-      delete newAnswers[question]; // トグルで消す
+      delete newAnswers[question];
     } else {
       newAnswers[question] = choice;
     }
     setAnswers(newAnswers);
     onAnswersChange?.(newAnswers);
+
+    // ラップタイム記録: 大問の最後の問題がマークされたら
+    if (examSections && newAnswers[question] !== undefined) {
+      const sec = examSections.find((s) => s.endQ === question);
+      if (sec && !recordedSectionsRef.current.has(sec.name)) {
+        const now = getTimestamp();
+        const elapsed = now - startTimeRef.current;
+        const prevLap = lapTimesRef.current[lapTimesRef.current.length - 1];
+        const duration = prevLap ? elapsed - prevLap.elapsedMs : elapsed;
+
+        const newLap: LapTime = {
+          sectionName: sec.name,
+          startQ: sec.startQ,
+          endQ: sec.endQ,
+          elapsedMs: elapsed,
+          durationMs: duration,
+        };
+        lapTimesRef.current = [...lapTimesRef.current, newLap];
+        recordedSectionsRef.current.add(sec.name);
+        onLapTimesChange?.(lapTimesRef.current);
+      }
+    }
   };
 
   const answeredCount = Object.keys(answers).length;
 
+  const formatMs = (ms: number) => {
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, "0")}`;
+  };
+
+  // 大問の境界を判定
+  const sectionEndQs = new Set(examSections?.map((s) => s.endQ) ?? []);
+  const sectionStartMap = new Map(examSections?.map((s) => [s.startQ, s.name]) ?? []);
+
   return (
-    <div className="rounded-lg border bg-white p-4">
+    <div className="rounded-lg border bg-white p-3">
       {/* ヘッダー */}
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-sm font-bold text-gray-900">マークシート</h3>
-        <span className="text-xs text-gray-500">
-          {answeredCount}/{questionCount}
-        </span>
+        <span className="text-xs text-gray-500">{answeredCount}/{questionCount}</span>
       </div>
 
       {/* マークシート本体 */}
@@ -75,84 +120,88 @@ export default function MarkSheet({
           const selected = answers[qNum];
           const isCorrect = results?.[qNum];
           const correctAnswer = answerKey?.[qNum];
+          const sectionLabel = sectionStartMap.get(qNum);
+          const isSectionEnd = sectionEndQs.has(qNum);
 
           return (
-            <div
-              key={qNum}
-              className={`flex items-center gap-0.5 rounded px-0.5 py-px ${
-                results
-                  ? isCorrect
-                    ? "bg-green-50"
-                    : "bg-red-50"
-                  : qNum % 2 === 0
-                    ? "bg-gray-50"
-                    : ""
-              }`}
-            >
-              {/* 問題番号 */}
-              <div className="w-8 text-center text-xs font-medium text-gray-700">
-                {qNum}
-              </div>
-
-              {/* マーク */}
-              {Array.from({ length: choiceCount }, (_, cIdx) => {
-                const choiceNum = cIdx + 1;
-                const isSelected = selected === choiceNum;
-                const isCorrectChoice = results && correctAnswer === choiceNum;
-
-                let markClass = "";
-                if (results) {
-                  if (isSelected && isCorrect) {
-                    markClass = "bg-green-600 text-white border-green-600"; // 正解
-                  } else if (isSelected && !isCorrect) {
-                    markClass = "bg-red-500 text-white border-red-500"; // 不正解
-                  } else if (isCorrectChoice) {
-                    markClass = "border-green-600 bg-green-100 text-green-700"; // 正解表示
-                  } else {
-                    markClass = "border-gray-300 text-gray-300";
-                  }
-                } else if (isSelected) {
-                  markClass = "bg-gray-900 text-white border-gray-900";
-                } else {
-                  markClass = "border-gray-300 text-gray-400 hover:border-gray-500 hover:bg-gray-100";
-                }
-
-                return (
-                  <button
-                    key={choiceNum}
-                    onClick={() => handleMark(qNum, choiceNum)}
-                    disabled={readOnly}
-                    className={`flex h-6 w-7 items-center justify-center rounded-full border-[1.5px] text-[10px] font-bold transition ${markClass} ${
-                      readOnly ? "cursor-default" : "cursor-pointer"
-                    }`}
-                  >
-                    {isSelected ? choiceNum : "○"}
-                  </button>
-                );
-              })}
-
-              {/* 採点結果 */}
-              {results && (
-                <div className="ml-1 w-6 text-center text-sm">
-                  {isCorrect ? "○" : "×"}
+            <div key={qNum}>
+              {/* 大問ラベル */}
+              {sectionLabel && (
+                <div className="mt-1 mb-0.5 px-1 text-[9px] font-bold text-blue-600 bg-blue-50 rounded py-0.5">
+                  {sectionLabel}
                 </div>
               )}
+              <div
+                className={`flex items-center gap-0.5 rounded px-0.5 py-px ${
+                  results
+                    ? isCorrect ? "bg-green-50" : "bg-red-50"
+                    : qNum % 2 === 0 ? "bg-gray-50" : ""
+                } ${isSectionEnd && !results ? "border-b border-blue-200 pb-1 mb-1" : ""}`}
+              >
+                <div className="w-8 text-center text-xs font-medium text-gray-700">{qNum}</div>
+                {Array.from({ length: choiceCount }, (_, cIdx) => {
+                  const choiceNum = cIdx + 1;
+                  const isSelected = selected === choiceNum;
+                  const isCorrectChoice = results && correctAnswer === choiceNum;
+
+                  let markClass = "";
+                  if (results) {
+                    if (isSelected && isCorrect) markClass = "bg-green-600 text-white border-green-600";
+                    else if (isSelected && !isCorrect) markClass = "bg-red-500 text-white border-red-500";
+                    else if (isCorrectChoice) markClass = "border-green-600 bg-green-100 text-green-700";
+                    else markClass = "border-gray-300 text-gray-300";
+                  } else if (isSelected) {
+                    markClass = "bg-gray-900 text-white border-gray-900";
+                  } else {
+                    markClass = "border-gray-300 text-gray-400 hover:border-gray-500 hover:bg-gray-100";
+                  }
+
+                  return (
+                    <button
+                      key={choiceNum}
+                      onClick={() => handleMark(qNum, choiceNum)}
+                      disabled={readOnly}
+                      className={`flex h-6 w-7 items-center justify-center rounded-full border-[1.5px] text-[10px] font-bold transition ${markClass} ${readOnly ? "cursor-default" : "cursor-pointer"}`}
+                    >
+                      {isSelected ? choiceNum : "○"}
+                    </button>
+                  );
+                })}
+                {results && (
+                  <div className="ml-1 w-6 text-center text-sm">{isCorrect ? "○" : "×"}</div>
+                )}
+              </div>
             </div>
           );
         })}
       </div>
 
-      {/* フッター統計 */}
+      {/* 採点結果 */}
       {results && (
-        <div className="mt-4 flex items-center justify-between border-t pt-3">
-          <div className="text-sm text-gray-600">
-            正解: {Object.values(results).filter(Boolean).length} / {questionCount}
+        <div className="mt-3 flex items-center justify-between border-t pt-2">
+          <div className="text-xs text-gray-600">
+            正解: {Object.values(results).filter(Boolean).length}/{questionCount}
           </div>
-          <div className="text-lg font-bold text-blue-600">
-            {Math.round(
-              (Object.values(results).filter(Boolean).length / questionCount) * 100
-            )}
-            %
+          <div className="text-base font-bold text-blue-600">
+            {Math.round((Object.values(results).filter(Boolean).length / questionCount) * 100)}%
+          </div>
+        </div>
+      )}
+
+      {/* ラップタイム表示 */}
+      {displayLapTimes && displayLapTimes.length > 0 && (
+        <div className="mt-3 border-t pt-2">
+          <h4 className="mb-1 text-xs font-bold text-gray-700">通過タイム</h4>
+          <div className="space-y-0.5">
+            {displayLapTimes.map((lap) => (
+              <div key={lap.sectionName} className="flex items-center justify-between text-[10px]">
+                <span className="text-gray-600 truncate max-w-[120px]">{lap.sectionName}</span>
+                <div className="flex gap-2">
+                  <span className="text-gray-500">{formatMs(lap.elapsedMs)}</span>
+                  <span className="font-bold text-blue-600">({formatMs(lap.durationMs)})</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

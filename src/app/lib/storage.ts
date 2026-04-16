@@ -1,6 +1,6 @@
 "use client";
 
-import type { QuizResult, UserProfile } from "./types";
+import type { QuizResult, UserProfile, CounselingNote } from "./types";
 
 /**
  * Returns true if Supabase environment variables are configured
@@ -292,4 +292,40 @@ export async function removeBookmark(userId: string, questionId: string): Promis
 export async function isBookmarked(userId: string, questionId: string): Promise<boolean> {
   const bookmarks = await getBookmarks(userId);
   return bookmarks.some((b) => b.questionId === questionId);
+}
+
+// ---------------------------------------------------------------------------
+// 全ユーザーの結果取得（先生用）
+// ---------------------------------------------------------------------------
+
+export async function getAllResults(): Promise<QuizResult[]> {
+  const results = lsGet<QuizResult[]>(LS_RESULTS_KEY) ?? [];
+  results.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+  return results;
+}
+
+export async function getResultsByUserId(userId: string): Promise<QuizResult[]> {
+  const results = lsGet<QuizResult[]>(LS_RESULTS_KEY) ?? [];
+  return results
+    .filter((r) => r.userId === userId)
+    .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+}
+
+// ---------------------------------------------------------------------------
+// カウンセリングノート
+// ---------------------------------------------------------------------------
+
+const LS_COUNSELING_KEY = "eiken_counseling";
+
+export async function getCounselingNotes(studentId: string): Promise<CounselingNote[]> {
+  const all = lsGet<CounselingNote[]>(LS_COUNSELING_KEY) ?? [];
+  return all
+    .filter((n) => n.studentId === studentId)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+export async function saveCounselingNote(note: CounselingNote): Promise<void> {
+  const all = lsGet<CounselingNote[]>(LS_COUNSELING_KEY) ?? [];
+  all.unshift(note);
+  lsSet(LS_COUNSELING_KEY, all);
 }
