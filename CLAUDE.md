@@ -1,61 +1,113 @@
-# 英検過去問演習アプリ (eiken-app)
+@AGENTS.md
+
+# 英検過去問アプリ — Claude Code 引き継ぎドキュメント
 
 ## プロジェクト概要
-英検（5級〜1級）の過去問をアプリ上で解答でき、自動採点・成績の保存・推移分析ができる学習アプリ。
+
+英検（実用英語技能検定）の過去問をアプリ上で解いて、自動採点・成績管理・分析ができる学習アプリ。先生用ダッシュボードで生徒管理もできる。「共通テスト過去問演習テストジーニー」をイメージして作成。
 
 ## 技術スタック
-- **フレームワーク**: Next.js (App Router) + TypeScript
-- **スタイリング**: Tailwind CSS
-- **BaaS**: Supabase (PostgreSQL + Auth + Storage)
-- **グラフ**: recharts
-- **アイコン**: lucide-react
-- **デプロイ**: Vercel
 
-## ディレクトリ構成
+- **Next.js 16.2.4** (App Router, Turbopack)
+- **React 19** + **TypeScript 5**
+- **Tailwind CSS 4**
+- **Supabase** (Auth + PostgreSQL + RLS) — 未接続でもlocalStorageフォールバックで動作
+- **recharts 3** (成績グラフ)
+- **lucide-react** (アイコン)
+
+## セットアップ
+
+```bash
+npm install
+npm run dev
+# http://localhost:3000 で開く
 ```
-src/
-├── app/
-│   ├── page.tsx                          # ランディングページ
-│   ├── layout.tsx                        # ルートレイアウト (lang="ja")
-│   ├── globals.css                       # グローバルCSS
-│   ├── auth/
-│   │   ├── login/page.tsx                # ログイン画面
-│   │   ├── signup/page.tsx               # 新規登録画面（生徒/先生選択付き）
-│   │   └── callback/route.ts             # OAuth コールバック
-│   ├── dashboard/page.tsx                # ホーム画面（級選択カード + 最近の学習）
-│   ├── exams/
-│   │   └── [grade]/
-│   │       ├── page.tsx                  # 年度・回の一覧（完了バッジ付き）
-│   │       └── [examId]/
-│   │           ├── page.tsx              # 問題解答画面（選択肢タップ + ナビ）
-│   │           └── result/page.tsx       # 結果画面（スコア + 正誤一覧 + 解説）
-│   └── history/page.tsx                  # 学習履歴一覧
-├── components/
-│   └── Header.tsx                        # 共通ヘッダー（ナビ + ログアウト）
-├── lib/
-│   ├── constants.ts                      # 級名・色・セクション名の定数
-│   ├── database.types.ts                 # DB テーブルの TypeScript 型定義
-│   └── supabase/
-│       ├── client.ts                     # ブラウザ用 Supabase クライアント
-│       ├── server.ts                     # サーバー用 Supabase クライアント
-│       └── middleware.ts                 # 認証セッション更新ミドルウェア
-├── middleware.ts                         # Next.js ミドルウェア（認証ガード）
+
+### Supabase接続（任意）
+
+1. Supabaseプロジェクトを作成
+2. `supabase/schema.sql` をSQL Editorで実行
+3. `.env.local` を編集:
+```
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...
+```
+
+## ファイル構成
+
+```
+src/app/
+├── page.tsx                         # ホーム（級選択）
+├── layout.tsx                       # ルートレイアウト（AuthProvider）
+├── globals.css                      # グローバルスタイル
+├── auth/
+│   ├── page.tsx                     # ログイン/サインアップ
+│   └── callback/route.ts           # OAuth コールバック
+├── grade/[gradeId]/page.tsx         # 級詳細（試験一覧）
+├── quiz/[examId]/page.tsx           # クイズ（問題解答）
+├── result/[resultId]/page.tsx       # 結果表示
+├── history/page.tsx                 # 解答履歴一覧
+├── analytics/page.tsx               # 成績分析ダッシュボード
+├── teacher/
+│   ├── page.tsx                     # 先生ダッシュボード
+│   └── class/[classId]/page.tsx     # クラス詳細（生徒・成績・課題）
+├── admin/import/page.tsx            # CSV問題インポート
+├── components/Header.tsx            # 共通ヘッダー
+└── lib/
+    ├── types.ts                     # 型定義
+    ├── data.ts                      # サンプル問題データ（50問+）
+    ├── storage.ts                   # データ保存（Supabase/localStorage）
+    ├── teacher-storage.ts           # 先生用CRUD
+    ├── auth-context.tsx             # 認証コンテキスト
+    └── supabase/
+        ├── client.ts                # ブラウザ用Supabaseクライアント
+        ├── server.ts                # サーバー用Supabaseクライアント
+        └── middleware.ts            # 認証ミドルウェア
+
+middleware.ts.bak                    # ミドルウェア（要リネーム、下記参照）
 supabase/
-└── migrations/
-    └── 001_initial_schema.sql            # 全テーブル定義 + RLS ポリシー
+├── schema.sql                       # DBスキーマ（RLS付き）
+└── migrations/001_initial_schema.sql
 ```
 
-## 主要テーブル
-- `user_profiles` - ユーザー情報（role: student/teacher）
-- `exams` - 過去問セット（級・年度・回・セクション）
-- `questions` - 問題（問題文・正解・解説）
-- `choices` - 選択肢
-- `user_answers` - 各問題の解答記録
-- `test_results` - テスト結果サマリー（スコア・正答率）
-- `user_bookmarks` - ブックマーク
-- `classes` / `class_members` / `assignments` - 先生向けクラス管理
+## 重要な設計ポイント
+
+### デュアルストレージ
+`storage.ts` と `teacher-storage.ts` は `isSupabaseConfigured()` でSupabaseの接続状態を確認し、未接続時はlocalStorageにフォールバックする。Supabase無しでもデモ動作可能。
+
+### ミドルウェア注意点
+`middleware.ts.bak` は元々 `middleware.ts` だったが、Supabase未設定時にブラウザから503エラーになる問題があったため一時的にリネームした。Supabase接続時は `middleware.ts` に戻すこと。
+
+### 試験ID命名規則
+`{grade}-{year}-{session}` 形式（例: `3kyu-2024-1`）。CSVインポート時にこのパターンから自動でメタデータを抽出する。
+
+### サンプルデータ
+`data.ts` に各級5問ずつのサンプル問題を収録（著作権に配慮した独自作成問題）。実際の英検過去問データは別途CSV等でインポートする想定。
+
+## 現在の状態
+
+### 完了済み
+- 全12ページ実装済み
+- 級選択 → 試験選択 → 問題解答 → 自動採点 → 結果表示の基本フロー
+- 解答履歴の保存・表示
+- 成績分析（級別平均・正答率・推移表示）
+- 先生ダッシュボード（クラス作成・招待コード・生徒管理・課題管理）
+- CSV一括インポート
+- 認証（メール+パスワード、デモモード対応）
+- Supabase RLSポリシー設定済み
+
+### 未対応・改善点
+1. **middleware.ts.bak → middleware.ts にリネーム必要**（Supabase接続後）
+2. **実際の英検過去問データの投入**（著作権に注意）
+3. **リスニング問題の音声再生機能**（現在はテキストのみ）
+4. **ライティング問題の採点機能**（自由記述の自動採点）
+5. **PWA対応**（Service Worker、オフライン対応）
+6. **ネイティブアプリ化**（Capacitor）
+7. **テストコードの追加**
+8. **本番デプロイ**（Vercel推奨）
 
 ## 開発コマンド
+
 ```bash
 npm run dev       # 開発サーバー (http://localhost:3000)
 npm run build     # プロダクションビルド
@@ -63,36 +115,13 @@ npm run lint      # ESLint
 npx tsc --noEmit  # 型チェック
 ```
 
-## 環境変数
-`.env.local` に以下を設定：
+## ビルド & デプロイ
+
+```bash
+# middleware.ts.bak を middleware.ts にリネームしてからビルド
+mv middleware.ts.bak middleware.ts
+npm run build
+npm start
 ```
-NEXT_PUBLIC_SUPABASE_URL=<Supabase プロジェクト URL>
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase anon key>
-```
 
-## 設計上の注意点
-- **認証**: Supabase Auth + `@supabase/ssr` によるクッキーベースセッション管理。未ログインユーザーは `/auth/login` にリダイレクト（`/` と `/auth/*` は除外）
-- **RLS**: 全テーブルで Row Level Security を有効化。exams/questions/choices は全ユーザー読み取り可、user_* テーブルは自分のデータのみアクセス可
-- **型安全性**: `database.types.ts` にアプリ用の型を定義。Supabase クエリ結果は `as` でキャストして使用。将来的に `supabase gen types typescript` で自動生成に移行可能
-- **級の識別子**: `5kyu`, `4kyu`, `3kyu`, `pre2kyu`, `2kyu`, `pre1kyu`, `1kyu`
-
-## Phase 1 (MVP) - 完了済み
-- [x] Next.js + Tailwind + Supabase セットアップ
-- [x] 認証（ログイン/サインアップ/ログアウト）
-- [x] ダッシュボード（級選択 + 最近の学習）
-- [x] 過去問一覧（年度・回・セクション別）
-- [x] 問題解答画面（選択肢タップ + 問題ナビゲーション）
-- [x] 自動採点 + 結果画面（スコア・正誤一覧・解説）
-- [x] 学習履歴ページ
-- [x] SQL マイグレーション + RLS ポリシー
-
-## 次のステップ
-1. Supabase プロジェクト作成 → `.env.local` 設定 → マイグレーション実行
-2. サンプル過去問データの投入（3級1年分から）
-3. スコア推移グラフ（recharts）
-4. 分野別正答率・弱点分析
-5. ブックマーク機能
-6. リスニング音声再生
-7. PWA 対応
-8. 先生向けダッシュボード
-9. CSV インポート機能
+Vercelデプロイ時は環境変数にSupabaseの値を設定すること。
