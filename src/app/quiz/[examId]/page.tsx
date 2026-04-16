@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/app/components/Header";
 import { useAuth } from "@/app/lib/auth-context";
@@ -15,23 +15,22 @@ export default function QuizPage() {
   const { user } = useAuth();
   const id = examId as string;
 
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const questions: Question[] = useMemo(() => getQuestions(id), [id]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [startTime] = useState(Date.now());
+  const startTimeRef = useRef(0);
 
   const exam = SAMPLE_EXAMS.find((e) => e.id === id);
-
-  useEffect(() => {
-    setQuestions(getQuestions(id));
-  }, [id]);
 
   const currentQuestion = questions[currentIndex];
   const totalQuestions = questions.length;
   const answeredCount = Object.keys(answers).length;
 
+  const getTimestamp = () => new Date().getTime();
+
   const handleSelect = (questionId: string, label: string) => {
+    if (startTimeRef.current === 0) startTimeRef.current = getTimestamp();
     setAnswers((prev) => ({ ...prev, [questionId]: label }));
   };
 
@@ -39,7 +38,7 @@ export default function QuizPage() {
     if (submitting || !user) return;
     setSubmitting(true);
 
-    const totalTimeSeconds = Math.round((Date.now() - startTime) / 1000);
+    const totalTimeSeconds = Math.round((getTimestamp() - startTimeRef.current) / 1000);
     let score = 0;
     let totalPoints = 0;
 

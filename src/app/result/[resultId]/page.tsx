@@ -4,16 +4,19 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/app/components/Header";
-import { getResultById } from "@/app/lib/storage";
+import { getResultById, addBookmark, removeBookmark, getBookmarks, type Bookmark } from "@/app/lib/storage";
+import { useAuth } from "@/app/lib/auth-context";
 import { getExamById, getQuestions } from "@/app/lib/data";
 import { GRADE_INFO, SECTION_LABELS } from "@/app/lib/types";
 import type { QuizResult, Question, Grade } from "@/app/lib/types";
-import { ArrowLeft, CheckCircle, XCircle, RotateCcw } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, RotateCcw, BookmarkPlus, BookmarkCheck } from "lucide-react";
 
 export default function ResultPage() {
   const { resultId } = useParams();
+  const { user } = useAuth();
   const [result, setResult] = useState<QuizResult | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,10 +25,23 @@ export default function ResultPage() {
       if (r) {
         setResult(r);
         setQuestions(getQuestions(r.examId));
+        const bms = await getBookmarks(user?.id);
+        setBookmarkedIds(new Set(bms.map((b: Bookmark) => b.questionId)));
       }
       setLoading(false);
     })();
-  }, [resultId]);
+  }, [resultId, user]);
+
+  const toggleBookmark = async (questionId: string, examId: string) => {
+    if (!user) return;
+    if (bookmarkedIds.has(questionId)) {
+      await removeBookmark(user.id, questionId);
+      setBookmarkedIds((prev) => { const s = new Set(prev); s.delete(questionId); return s; });
+    } else {
+      await addBookmark(user.id, { questionId, examId, note: "", createdAt: new Date().toISOString() });
+      setBookmarkedIds((prev) => new Set(prev).add(questionId));
+    }
+  };
 
   if (loading) {
     return <div className="min-h-screen bg-gray-50"><Header /><div className="flex items-center justify-center py-32 text-gray-500">読み込み中...</div></div>;
@@ -91,6 +107,13 @@ export default function ResultPage() {
                       {!answer.isCorrect && <p className="text-green-700">正解: {question.correctAnswer}</p>}
                     </div>
                     {question.explanation && <p className="mt-2 text-sm text-gray-600">{question.explanation}</p>}
+                    <button
+                      onClick={() => toggleBookmark(question.id, result.examId)}
+                      className="mt-2 flex items-center gap-1 text-xs text-gray-500 hover:text-yellow-600"
+                    >
+                      {bookmarkedIds.has(question.id) ? <BookmarkCheck size={14} className="text-yellow-500" /> : <BookmarkPlus size={14} />}
+                      {bookmarkedIds.has(question.id) ? "ブックマーク済み" : "ブックマークする"}
+                    </button>
                   </div>
                 </div>
               </div>

@@ -1,0 +1,22 @@
+{
+  "name": "英検過去問演習",
+  "short_name": "英検演習",
+  "description": "英検5級〜1級の過去問を解いて、自動採点・成績分析ができる学習アプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

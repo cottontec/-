@@ -218,3 +218,78 @@ export async function saveProfile(profile: UserProfile): Promise<void> {
 
   lsSet(`${LS_PROFILE_KEY_PREFIX}${profile.id}`, profile);
 }
+
+// ---------------------------------------------------------------------------
+// Bookmarks
+// ---------------------------------------------------------------------------
+
+export interface Bookmark {
+  questionId: string;
+  examId: string;
+  note: string;
+  createdAt: string;
+}
+
+const LS_BOOKMARKS_KEY = "eiken_bookmarks";
+
+export async function getBookmarks(userId?: string): Promise<Bookmark[]> {
+  if (isSupabaseConfigured() && userId) {
+    try {
+      const { createClient } = await import("./supabase/client");
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("user_bookmarks")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []).map((row: Record<string, unknown>) => ({
+        questionId: row.question_id as string,
+        examId: row.exam_id as string,
+        note: (row.note as string) ?? "",
+        createdAt: row.created_at as string,
+      }));
+    } catch { /* fall through */ }
+  }
+  return lsGet<Bookmark[]>(LS_BOOKMARKS_KEY) ?? [];
+}
+
+export async function addBookmark(userId: string, bookmark: Bookmark): Promise<void> {
+  if (isSupabaseConfigured()) {
+    try {
+      const { createClient } = await import("./supabase/client");
+      const supabase = createClient();
+      await supabase.from("user_bookmarks").upsert({
+        user_id: userId,
+        question_id: bookmark.questionId,
+        exam_id: bookmark.examId,
+        note: bookmark.note,
+        created_at: bookmark.createdAt,
+      });
+      return;
+    } catch { /* fall through */ }
+  }
+  const bookmarks = lsGet<Bookmark[]>(LS_BOOKMARKS_KEY) ?? [];
+  const idx = bookmarks.findIndex((b) => b.questionId === bookmark.questionId);
+  if (idx >= 0) bookmarks[idx] = bookmark;
+  else bookmarks.unshift(bookmark);
+  lsSet(LS_BOOKMARKS_KEY, bookmarks);
+}
+
+export async function removeBookmark(userId: string, questionId: string): Promise<void> {
+  if (isSupabaseConfigured()) {
+    try {
+      const { createClient } = await import("./supabase/client");
+      const supabase = createClient();
+      await supabase.from("user_bookmarks").delete().eq("user_id", userId).eq("question_id", questionId);
+      return;
+    } catch { /* fall through */ }
+  }
+  const bookmarks = lsGet<Bookmark[]>(LS_BOOKMARKS_KEY) ?? [];
+  lsSet(LS_BOOKMARKS_KEY, bookmarks.filter((b) => b.questionId !== questionId));
+}
+
+export async function isBookmarked(userId: string, questionId: string): Promise<boolean> {
+  const bookmarks = await getBookmarks(userId);
+  return bookmarks.some((b) => b.questionId === questionId);
+}

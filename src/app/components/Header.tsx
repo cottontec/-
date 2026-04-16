@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/app/lib/auth-context";
-import { LogOut, Home, History, BarChart3, GraduationCap } from "lucide-react";
+import { LogOut, Home, History, BarChart3, GraduationCap, Bookmark } from "lucide-react";
 
 export default function Header() {
   const { user, signOut } = useAuth();
@@ -27,6 +27,10 @@ export default function Header() {
               <Link href="/analytics" className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
                 <BarChart3 size={16} />
                 <span className="hidden sm:inline">分析</span>
+              </Link>
+              <Link href="/bookmarks" className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
+                <Bookmark size={16} />
+                <span className="hidden sm:inline">保存</span>
               </Link>
               {user.role === "teacher" && (
                 <Link href="/teacher" className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
