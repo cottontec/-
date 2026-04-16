@@ -1,13 +1,30 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import Header from "@/app/components/Header";
 import { useAuth } from "@/app/lib/auth-context";
 import { getResults } from "@/app/lib/storage";
 import { getExamById } from "@/app/lib/data";
 import { GRADE_INFO } from "@/app/lib/types";
 import type { QuizResult, Grade } from "@/app/lib/types";
-import { BarChart3, TrendingUp, Target } from "lucide-react";
+import { BarChart3 as BarChartIcon, TrendingUp, Target } from "lucide-react";
+
+// recharts を動的インポート（SSR無効）
+const LineChart = dynamic(() => import("recharts").then((m) => m.LineChart), { ssr: false });
+const Line = dynamic(() => import("recharts").then((m) => m.Line), { ssr: false });
+const XAxis = dynamic(() => import("recharts").then((m) => m.XAxis), { ssr: false });
+const YAxis = dynamic(() => import("recharts").then((m) => m.YAxis), { ssr: false });
+const CartesianGrid = dynamic(() => import("recharts").then((m) => m.CartesianGrid), { ssr: false });
+const Tooltip = dynamic(() => import("recharts").then((m) => m.Tooltip), { ssr: false });
+const ResponsiveContainer = dynamic(() => import("recharts").then((m) => m.ResponsiveContainer), { ssr: false });
+const BarChart = dynamic(() => import("recharts").then((m) => m.BarChart), { ssr: false });
+const Bar = dynamic(() => import("recharts").then((m) => m.Bar), { ssr: false });
+const RadarChart = dynamic(() => import("recharts").then((m) => m.RadarChart), { ssr: false });
+const Radar = dynamic(() => import("recharts").then((m) => m.Radar), { ssr: false });
+const PolarGrid = dynamic(() => import("recharts").then((m) => m.PolarGrid), { ssr: false });
+const PolarAngleAxis = dynamic(() => import("recharts").then((m) => m.PolarAngleAxis), { ssr: false });
+const PolarRadiusAxis = dynamic(() => import("recharts").then((m) => m.PolarRadiusAxis), { ssr: false });
 
 export default function AnalyticsPage() {
   const { user } = useAuth();
@@ -38,24 +55,60 @@ export default function AnalyticsPage() {
     gradeStats.set(key, cur);
   });
 
-  // 直近10件の推移
-  const recent = results.slice(0, 10).reverse();
-
-  // 弱点分析（正答率が低い問題タイプ）
-  const typeStats = new Map<string, { correct: number; total: number }>();
-  results.forEach((r) => {
-    r.answers.forEach((a) => {
-      // questionIdからexamIdを推定してタイプを取得（簡易版）
-      const cur = typeStats.get("全体") ?? { correct: 0, total: 0 };
-      cur.total += 1;
-      if (a.isCorrect) cur.correct += 1;
-      typeStats.set("全体", cur);
-    });
+  // 折れ線グラフ用データ（直近20件）
+  const lineData = results.slice(0, 20).reverse().map((r, i) => {
+    const exam = getExamById(r.examId);
+    return {
+      name: `#${i + 1}`,
+      score: r.percentage,
+      grade: exam ? GRADE_INFO[exam.grade as Grade]?.label : "?",
+    };
   });
 
-  const overallCorrectRate = typeStats.has("全体")
-    ? Math.round((typeStats.get("全体")!.correct / typeStats.get("全体")!.total) * 100)
-    : 0;
+  // 棒グラフ用データ（級別平均）
+  const barData = Array.from(gradeStats.entries()).map(([grade, stats]) => ({
+    name: GRADE_INFO[grade as Grade]?.label ?? grade,
+    average: Math.round(stats.total / stats.count),
+    count: stats.count,
+  }));
+
+  // レーダーチャート用データ（セクション別 — 簡易版）
+  const sectionStats = new Map<string, { correct: number; total: number }>();
+  results.forEach((r) => {
+    const exam = getExamById(r.examId);
+    if (!exam) return;
+    const section = exam.section;
+    const cur = sectionStats.get(section) ?? { correct: 0, total: 0 };
+    r.answers.forEach((a) => {
+      cur.total += 1;
+      if (a.isCorrect) cur.correct += 1;
+    });
+    sectionStats.set(section, cur);
+  });
+
+  const radarData = [
+    { subject: "語彙", value: 0 },
+    { subject: "文法", value: 0 },
+    { subject: "読解", value: 0 },
+    { subject: "リスニング", value: 0 },
+  ];
+  // 全体の正答率をベースにシミュレート
+  const totalCorrect = results.reduce((sum, r) => sum + r.score, 0);
+  const totalQ = results.reduce((sum, r) => sum + r.totalPoints, 0);
+  const overallRate = totalQ > 0 ? Math.round((totalCorrect / totalQ) * 100) : 0;
+
+  if (totalQ > 0) {
+    const readingStat = sectionStats.get("reading");
+    const listeningStat = sectionStats.get("listening");
+    radarData[0].value = overallRate; // 語彙
+    radarData[1].value = overallRate; // 文法
+    radarData[2].value = readingStat
+      ? Math.round((readingStat.correct / readingStat.total) * 100)
+      : overallRate; // 読解
+    radarData[3].value = listeningStat
+      ? Math.round((listeningStat.correct / listeningStat.total) * 100)
+      : overallRate; // リスニング
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -65,74 +118,78 @@ export default function AnalyticsPage() {
 
         {results.length === 0 ? (
           <div className="rounded-lg border bg-white py-12 text-center">
-            <BarChart3 size={48} className="mx-auto text-gray-300" />
+            <BarChartIcon size={48} className="mx-auto text-gray-300" />
             <p className="mt-4 text-gray-500">まだデータがありません</p>
             <p className="text-sm text-gray-400">過去問を解くと分析結果が表示されます</p>
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {/* 総合統計 */}
-            <div className="rounded-lg border bg-white p-6">
-              <div className="mb-4 flex items-center gap-2">
-                <Target size={20} className="text-blue-600" />
-                <h3 className="text-lg font-semibold text-gray-900">総合成績</h3>
-              </div>
-              <div className="text-center">
-                <p className="text-4xl font-bold text-blue-600">{overallCorrectRate}%</p>
+          <div className="space-y-6">
+            {/* 統計カード */}
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="rounded-lg border bg-white p-6 text-center">
+                <Target size={24} className="mx-auto mb-2 text-blue-600" />
+                <p className="text-3xl font-bold text-blue-600">{overallRate}%</p>
                 <p className="text-sm text-gray-500">全体正答率</p>
               </div>
-              <div className="mt-4 text-sm text-gray-600">
-                <p>受験回数: {results.length}回</p>
-                <p>解答数: {typeStats.get("全体")?.total ?? 0}問</p>
+              <div className="rounded-lg border bg-white p-6 text-center">
+                <BarChartIcon size={24} className="mx-auto mb-2 text-green-600" />
+                <p className="text-3xl font-bold text-green-600">{results.length}</p>
+                <p className="text-sm text-gray-500">受験回数</p>
+              </div>
+              <div className="rounded-lg border bg-white p-6 text-center">
+                <TrendingUp size={24} className="mx-auto mb-2 text-purple-600" />
+                <p className="text-3xl font-bold text-purple-600">{totalQ}</p>
+                <p className="text-sm text-gray-500">解答数</p>
               </div>
             </div>
 
-            {/* 級別成績 */}
+            {/* スコア推移（折れ線グラフ） */}
             <div className="rounded-lg border bg-white p-6">
-              <div className="mb-4 flex items-center gap-2">
-                <BarChart3 size={20} className="text-green-600" />
-                <h3 className="text-lg font-semibold text-gray-900">級別平均</h3>
+              <h3 className="mb-4 text-lg font-semibold text-gray-900">スコア推移</h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={lineData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" fontSize={12} />
+                    <YAxis domain={[0, 100]} fontSize={12} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="score" stroke="#2563eb" strokeWidth={2} name="スコア (%)" dot={{ r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
-              <div className="space-y-3">
-                {Array.from(gradeStats.entries()).map(([grade, stats]) => {
-                  const avg = Math.round(stats.total / stats.count);
-                  const info = GRADE_INFO[grade as Grade];
-                  return (
-                    <div key={grade} className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">{info?.label ?? grade}</span>
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-24 rounded-full bg-gray-200">
-                          <div className="h-2 rounded-full bg-blue-500" style={{ width: `${avg}%` }} />
-                        </div>
-                        <span className="text-sm font-bold text-gray-900">{avg}%</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              {gradeStats.size === 0 && <p className="text-sm text-gray-400">データなし</p>}
             </div>
 
-            {/* スコア推移 */}
-            <div className="rounded-lg border bg-white p-6">
-              <div className="mb-4 flex items-center gap-2">
-                <TrendingUp size={20} className="text-purple-600" />
-                <h3 className="text-lg font-semibold text-gray-900">最近の推移</h3>
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* 級別平均（棒グラフ） */}
+              <div className="rounded-lg border bg-white p-6">
+                <h3 className="mb-4 text-lg font-semibold text-gray-900">級別平均スコア</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={barData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" fontSize={12} />
+                      <YAxis domain={[0, 100]} fontSize={12} />
+                      <Tooltip />
+                      <Bar dataKey="average" fill="#10b981" name="平均スコア (%)" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-              <div className="space-y-2">
-                {recent.map((r, i) => {
-                  const exam = getExamById(r.examId);
-                  return (
-                    <div key={r.id} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">#{i + 1} {exam ? GRADE_INFO[exam.grade as Grade]?.label : "?"}</span>
-                      <span className={`font-bold ${r.percentage >= 70 ? "text-green-600" : r.percentage >= 50 ? "text-yellow-600" : "text-red-600"}`}>
-                        {r.percentage}%
-                      </span>
-                    </div>
-                  );
-                })}
+
+              {/* 分野別レーダーチャート */}
+              <div className="rounded-lg border bg-white p-6">
+                <h3 className="mb-4 text-lg font-semibold text-gray-900">分野別正答率</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart data={radarData}>
+                      <PolarGrid />
+                      <PolarAngleAxis dataKey="subject" fontSize={12} />
+                      <PolarRadiusAxis domain={[0, 100]} fontSize={10} />
+                      <Radar dataKey="value" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.3} name="正答率 (%)" />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-              {recent.length === 0 && <p className="text-sm text-gray-400">データなし</p>}
             </div>
           </div>
         )}

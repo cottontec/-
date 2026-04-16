@@ -3,6 +3,8 @@
 import { useState, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/app/components/Header";
+import AudioPlayer from "@/app/components/AudioPlayer";
+import PdfViewer from "@/app/components/PdfViewer";
 import { useAuth } from "@/app/lib/auth-context";
 import { getQuestions, SAMPLE_EXAMS } from "@/app/lib/data";
 import { saveResult } from "@/app/lib/storage";
@@ -83,6 +85,18 @@ export default function QuizPage() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main className="mx-auto max-w-3xl px-4 py-6">
+        {/* 音声・PDF */}
+        {(exam.audioUrl || exam.pdfUrl) && (
+          <div className="mb-6 space-y-4">
+            {exam.audioUrl && (
+              <AudioPlayer src={exam.audioUrl} title={`${exam.title} — リスニング音声`} />
+            )}
+            {exam.pdfUrl && (
+              <PdfViewer src={exam.pdfUrl} title={`${exam.title} — 問題PDF`} />
+            )}
+          </div>
+        )}
+
         {/* 進捗 */}
         <div className="mb-4 flex items-center justify-between text-sm text-gray-600">
           <span>問題 {currentIndex + 1} / {totalQuestions}</span>

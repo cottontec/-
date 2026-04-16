@@ -14,6 +14,8 @@ export interface Exam {
   title: string;
   questionCount: number;
   timeLimitMinutes: number | null;
+  audioUrl?: string;   // リスニング音声URL
+  pdfUrl?: string;     // 問題PDF URL
 }
 
 export interface Question {
