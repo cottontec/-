@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/app/lib/auth-context";
+import { ThemeProvider, themeInitScript } from "@/app/lib/theme-context";
 import { ServiceWorkerRegistrar } from "@/app/components/ServiceWorkerRegistrar";
+import BottomNav from "@/app/components/BottomNav";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -19,7 +21,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#2563eb",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b1220" },
+  ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -30,9 +35,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ja" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <head>
         <link rel="apple-touch-icon" href="/icon-192.png" />
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className="min-h-full bg-gray-50 text-gray-900">
-        <AuthProvider>{children}</AuthProvider>
+      <body className="min-h-full bg-[var(--background)] text-[var(--foreground)]">
+        <ThemeProvider>
+          <AuthProvider>
+            {children}
+            <BottomNav />
+          </AuthProvider>
+        </ThemeProvider>
         <ServiceWorkerRegistrar />
       </body>
     </html>

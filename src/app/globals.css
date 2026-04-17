@@ -1,24 +1,56 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #f8fafc;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
   --foreground: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
   --primary: #2563eb;
+  --primary-hover: #1d4ed8;
   --primary-light: #dbeafe;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #dc2626;
+}
+
+.dark {
+  --background: #0b1220;
+  --surface: #111827;
+  --surface-2: #1f2937;
+  --foreground: #e5e7eb;
+  --muted: #94a3b8;
+  --border: #1f2937;
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-light: #1e3a8a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
+
+html { color-scheme: light dark; }
+.dark { color-scheme: dark; }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* モバイル下ナビ分の余白 */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* スクロールバー */
@@ -26,23 +58,53 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+.dark ::-webkit-scrollbar-thumb { background: #334155; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
 /* マークシートのマーク塗りつぶしアニメーション */
-.mark-fill {
-  transition: all 0.15s ease-out;
-}
+.mark-fill { transition: all 0.15s ease-out; }
 
 /* カード hover エフェクト */
-.card-hover {
-  transition: all 0.2s ease;
-}
+.card-hover { transition: all 0.2s ease; }
 .card-hover:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px -5px rgba(0,0,0,0.1), 0 4px 10px -6px rgba(0,0,0,0.1);
 }
 
 /* PDF ビューア内のスクロール */
-.pdf-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: #94a3b8 transparent;
+.pdf-scroll { scrollbar-width: thin; scrollbar-color: #94a3b8 transparent; }
+
+/* 共通カードクラス（ライト/ダーク両対応） */
+.surface-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
+
+/* モバイル下ナビが被らないように本文の余白を確保 */
+@media (max-width: 768px) {
+  main { padding-bottom: 80px; }
+}
+
+/* キーボードヒント */
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  padding: 0 0.35rem;
+  height: 1.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 0.3rem;
+  color: var(--muted);
+}
+
+/* 控えめなフェードイン */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.25s ease-out both; }

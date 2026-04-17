@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/app/components/Header";
 import AudioPlayer from "@/app/components/AudioPlayer";
@@ -52,6 +52,49 @@ export default function QuizPage() {
     if (startTimeRef.current === 0) startTimeRef.current = getTimestamp();
     setTextAnswers((prev) => ({ ...prev, [questionId]: label }));
   };
+
+  // ===== キーボードショートカット（従来モードのみ） =====
+  useEffect(() => {
+    if (isPdfMode) return;
+    const onKey = (e: KeyboardEvent) => {
+      // 入力欄では無効化
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement)?.isContentEditable) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+      const q = questions[currentIndex];
+      if (!q) return;
+
+      // 1〜9 で選択肢
+      if (/^[1-9]$/.test(e.key)) {
+        const idx = parseInt(e.key, 10) - 1;
+        const choice = q.choices[idx];
+        if (choice) {
+          e.preventDefault();
+          handleTextSelect(q.id, choice.label);
+        }
+        return;
+      }
+      // ←/→ で問題移動
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        setCurrentIndex((i) => Math.max(0, i - 1));
+        return;
+      }
+      if (e.key === "ArrowRight" || e.key === "Enter") {
+        e.preventDefault();
+        if (currentIndex < questions.length - 1) {
+          setCurrentIndex((i) => i + 1);
+        } else if (e.key === "Enter") {
+          handleSubmit();
+        }
+        return;
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPdfMode, currentIndex, questions]);
 
   const handleMarkChange = (answers: Record<number, number>) => {
     if (startTimeRef.current === 0) startTimeRef.current = getTimestamp();
@@ -319,30 +362,38 @@ export default function QuizPage() {
 
         {/* 問題 */}
         {currentQuestion && (
-          <div className="rounded-lg border bg-white p-6 shadow-sm">
-            <p className="mb-1 text-sm font-medium text-gray-500">第{currentQuestion.number}問</p>
-            <p className="mb-6 whitespace-pre-wrap text-lg text-gray-900">{currentQuestion.text}</p>
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+            <p className="mb-1 text-sm font-medium text-[var(--muted)]">第{currentQuestion.number}問</p>
+            <p className="mb-6 whitespace-pre-wrap text-lg text-[var(--foreground)]">{currentQuestion.text}</p>
             <div className="space-y-3">
-              {currentQuestion.choices.map((choice) => {
+              {currentQuestion.choices.map((choice, idx) => {
                 const isSelected = textAnswers[currentQuestion.id] === choice.label;
                 return (
                   <button
                     key={choice.label}
                     onClick={() => handleTextSelect(currentQuestion.id, choice.label)}
                     className={`flex w-full items-center gap-3 rounded-md border px-4 py-3 text-left transition ${
-                      isSelected ? "border-blue-500 bg-blue-50 text-blue-900" : "border-gray-200 hover:bg-gray-50"
+                      isSelected
+                        ? "border-blue-500 bg-blue-50 text-blue-900 dark:bg-blue-950 dark:text-blue-100"
+                        : "border-[var(--border)] hover:bg-[var(--surface-2)] text-[var(--foreground)]"
                     }`}
                   >
                     <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-medium ${
-                      isSelected ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600"
+                      isSelected ? "bg-blue-600 text-white" : "bg-[var(--surface-2)] text-[var(--muted)]"
                     }`}>
                       {choice.label}
                     </span>
-                    <span>{choice.text}</span>
+                    <span className="flex-1">{choice.text}</span>
+                    <span className="kbd hidden sm:inline-flex" aria-hidden>{idx + 1}</span>
                   </button>
                 );
               })}
             </div>
+            <p className="mt-4 hidden text-xs text-[var(--muted)] sm:block">
+              <span className="kbd">1</span>〜<span className="kbd">{currentQuestion.choices.length}</span> で選択 ・
+              <span className="kbd">←</span><span className="kbd">→</span> で問題移動 ・
+              <span className="kbd">Enter</span> で次へ
+            </p>
           </div>
         )}
 
