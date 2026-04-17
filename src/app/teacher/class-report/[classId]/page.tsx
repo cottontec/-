@@ -97,19 +97,19 @@ export default function ClassReportPage() {
   };
 
   if (!user || user.role !== "teacher") {
-    return <div className="min-h-screen bg-gray-50"><Header /><div className="flex items-center justify-center py-32 text-gray-500">先生アカウントでログインしてください</div></div>;
+    return <div className="min-h-screen bg-[var(--background)]"><Header /><div className="flex items-center justify-center py-32 text-[var(--muted)]">先生アカウントでログインしてください</div></div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--background)]">
       <Header />
       <main className="mx-auto max-w-6xl px-4 py-8">
-        <Link href={`/teacher/class/${id}`} className="mb-4 inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
+        <Link href={`/teacher/class/${id}`} className="mb-4 inline-flex items-center gap-1 text-sm text-[var(--muted)] hover:text-[var(--foreground)]">
           <ArrowLeft size={16} /> クラス詳細に戻る
         </Link>
 
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-[var(--foreground)]">
             <Table size={22} className="inline mr-2" />
             {cls?.name ?? "クラス"} — 成績一覧表
           </h2>
@@ -119,29 +119,29 @@ export default function ClassReportPage() {
         </div>
 
         {loading ? (
-          <div className="py-12 text-center text-gray-500">読み込み中...</div>
+          <div className="py-12 text-center text-[var(--muted)]">読み込み中...</div>
         ) : rows.length > 0 ? (
-          <div className="overflow-x-auto rounded-lg border bg-white">
+          <div className="overflow-x-auto rounded-lg border border-[var(--border)] bg-[var(--surface)]">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50">
+              <thead className="bg-[var(--background)]">
                 <tr>
-                  <th className="sticky left-0 z-10 bg-gray-50 px-4 py-3 text-left font-semibold text-gray-700">生徒名</th>
-                  <th className="px-3 py-3 text-center font-semibold text-gray-700">回数</th>
-                  <th className="px-3 py-3 text-center font-semibold text-gray-700">平均</th>
+                  <th className="sticky left-0 z-10 bg-[var(--background)] px-4 py-3 text-left font-semibold text-[var(--foreground)]">生徒名</th>
+                  <th className="px-3 py-3 text-center font-semibold text-[var(--foreground)]">回数</th>
+                  <th className="px-3 py-3 text-center font-semibold text-[var(--foreground)]">平均</th>
                   {allSections.map((s) => (
-                    <th key={s} className="px-3 py-3 text-center font-semibold text-gray-700 whitespace-nowrap text-xs">{s}</th>
+                    <th key={s} className="px-3 py-3 text-center font-semibold text-[var(--foreground)] whitespace-nowrap text-xs">{s}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {rows.map((row) => (
-                  <tr key={row.member.studentId} className="hover:bg-gray-50">
-                    <td className="sticky left-0 z-10 bg-white px-4 py-2 font-medium text-gray-900">
+                  <tr key={row.member.studentId} className="hover:bg-[var(--background)]">
+                    <td className="sticky left-0 z-10 bg-[var(--surface)] px-4 py-2 font-medium text-[var(--foreground)]">
                       <Link href={`/teacher/student/${row.member.studentId}`} className="text-blue-600 hover:underline">
                         {row.member.studentName}
                       </Link>
                     </td>
-                    <td className="px-3 py-2 text-center text-gray-600">{row.results.length}</td>
+                    <td className="px-3 py-2 text-center text-[var(--muted)]">{row.results.length}</td>
                     <td className="px-3 py-2 text-center">
                       <span className={`font-bold ${row.avgPercentage >= 70 ? "text-green-600" : row.avgPercentage >= 50 ? "text-yellow-600" : "text-red-600"}`}>
                         {row.avgPercentage}%
@@ -156,7 +156,7 @@ export default function ClassReportPage() {
                               {val}%
                             </span>
                           ) : (
-                            <span className="text-gray-300">-</span>
+                            <span className="text-[var(--muted)]">-</span>
                           )}
                         </td>
                       );
@@ -167,7 +167,7 @@ export default function ClassReportPage() {
             </table>
           </div>
         ) : (
-          <div className="rounded-lg border bg-white py-12 text-center text-gray-500">まだデータがありません</div>
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] py-12 text-center text-[var(--muted)]">まだデータがありません</div>
         )}
       </main>
     </div>

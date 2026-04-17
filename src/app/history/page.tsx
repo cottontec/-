@@ -24,26 +24,26 @@ export default function HistoryPage() {
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--background)]">
       <Header />
       <main className="mx-auto max-w-3xl px-4 py-8">
-        <h2 className="mb-6 text-2xl font-bold text-gray-900">学習履歴</h2>
+        <h2 className="mb-6 text-2xl font-bold text-[var(--foreground)]">学習履歴</h2>
 
         {loading ? (
-          <div className="py-12 text-center text-gray-500">読み込み中...</div>
+          <div className="py-12 text-center text-[var(--muted)]">読み込み中...</div>
         ) : results.length > 0 ? (
           <div className="space-y-3">
             {results.map((result) => {
               const exam = getExamById(result.examId);
               const gradeLabel = exam ? GRADE_INFO[exam.grade as Grade]?.label ?? exam.grade : "不明";
               return (
-                <Link key={result.id} href={`/result/${result.id}`} className="flex items-center justify-between rounded-lg border bg-white px-4 py-4 transition hover:shadow-sm">
+                <Link key={result.id} href={`/result/${result.id}`} className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-4 transition hover:shadow-sm">
                   <div className="flex items-center gap-3">
                     <Trophy size={20} className="text-yellow-500" />
                     <div>
-                      <p className="font-medium text-gray-900">{exam ? `${gradeLabel} ${exam.year}年 第${exam.session}回` : "不明な試験"}</p>
-                      <p className="text-sm text-gray-500">{exam ? (SECTION_LABELS[exam.section] ?? exam.section) : ""}</p>
-                      <p className="flex items-center gap-1 text-xs text-gray-400">
+                      <p className="font-medium text-[var(--foreground)]">{exam ? `${gradeLabel} ${exam.year}年 第${exam.session}回` : "不明な試験"}</p>
+                      <p className="text-sm text-[var(--muted)]">{exam ? (SECTION_LABELS[exam.section] ?? exam.section) : ""}</p>
+                      <p className="flex items-center gap-1 text-xs text-[var(--muted)]">
                         <Calendar size={12} />
                         {new Date(result.completedAt).toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </p>
@@ -51,16 +51,16 @@ export default function HistoryPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-blue-600">{result.percentage}%</p>
-                    <p className="text-sm text-gray-500">{result.score}/{result.totalPoints}</p>
+                    <p className="text-sm text-[var(--muted)]">{result.score}/{result.totalPoints}</p>
                   </div>
                 </Link>
               );
             })}
           </div>
         ) : (
-          <div className="rounded-lg border bg-white py-12 text-center">
-            <Calendar size={48} className="mx-auto text-gray-300" />
-            <p className="mt-4 text-gray-500">まだ学習履歴がありません</p>
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] py-12 text-center">
+            <Calendar size={48} className="mx-auto text-[var(--muted)]" />
+            <p className="mt-4 text-[var(--muted)]">まだ学習履歴がありません</p>
             <Link href="/" className="mt-4 inline-block rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">過去問に挑戦する</Link>
           </div>
         )}

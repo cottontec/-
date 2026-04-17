@@ -56,15 +56,15 @@ export default function GoalsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--background)]">
       <Header />
       <main className="mx-auto max-w-3xl px-4 py-8">
-        <h2 className="mb-6 text-2xl font-bold text-gray-900">
+        <h2 className="mb-6 text-2xl font-bold text-[var(--foreground)]">
           <Target size={24} className="inline mr-2 text-blue-600" /> 目標設定
         </h2>
 
         {loading ? (
-          <div className="py-12 text-center text-gray-500">読み込み中...</div>
+          <div className="py-12 text-center text-[var(--muted)]">読み込み中...</div>
         ) : (
           <div className="space-y-4">
             {GRADES.map((grade) => {
@@ -77,15 +77,15 @@ export default function GoalsPage() {
               const achieved = goal && latest !== null && latest >= goal.targetPercentage;
 
               return (
-                <div key={grade} className={`rounded-lg border bg-white p-5 ${achieved ? "border-green-300 bg-green-50" : ""}`}>
+                <div key={grade} className={`rounded-lg border bg-[var(--surface)] p-5 ${achieved ? "border-green-300 bg-green-50" : ""}`}>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <div className={`h-10 w-10 flex items-center justify-center rounded-full text-white text-sm font-bold ${info.bgColor}`}>
                         {info.label.replace("級", "")}
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900">{info.label}</h3>
-                        <p className="text-xs text-gray-500">受験{gradeResults.length}回</p>
+                        <h3 className="font-bold text-[var(--foreground)]">{info.label}</h3>
+                        <p className="text-xs text-[var(--muted)]">受験{gradeResults.length}回</p>
                       </div>
                     </div>
                     {achieved && <Trophy size={20} className="text-yellow-500" />}
@@ -93,13 +93,13 @@ export default function GoalsPage() {
 
                   {/* 成績 */}
                   <div className="grid grid-cols-3 gap-3 mb-3 text-center">
-                    <div className="rounded bg-gray-50 p-2">
-                      <p className="text-xs text-gray-500">最新</p>
-                      <p className="text-lg font-bold text-gray-900">{latest !== null ? `${latest}%` : "-"}</p>
+                    <div className="rounded bg-[var(--background)] p-2">
+                      <p className="text-xs text-[var(--muted)]">最新</p>
+                      <p className="text-lg font-bold text-[var(--foreground)]">{latest !== null ? `${latest}%` : "-"}</p>
                     </div>
-                    <div className="rounded bg-gray-50 p-2">
-                      <p className="text-xs text-gray-500">平均</p>
-                      <p className="text-lg font-bold text-gray-900">{avg !== null ? `${avg}%` : "-"}</p>
+                    <div className="rounded bg-[var(--background)] p-2">
+                      <p className="text-xs text-[var(--muted)]">平均</p>
+                      <p className="text-lg font-bold text-[var(--foreground)]">{avg !== null ? `${avg}%` : "-"}</p>
                     </div>
                     <div className="rounded bg-blue-50 p-2">
                       <p className="text-xs text-blue-600">目標</p>
@@ -111,20 +111,20 @@ export default function GoalsPage() {
                   {goal && latest !== null && (
                     <div className="mb-3">
                       <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="text-gray-500">達成率</span>
+                        <span className="text-[var(--muted)]">達成率</span>
                         <span className={`font-bold ${achieved ? "text-green-600" : "text-blue-600"}`}>
                           {Math.min(100, Math.round((latest / goal.targetPercentage) * 100))}%
                           {achieved && " 達成!"}
                         </span>
                       </div>
-                      <div className="h-3 rounded-full bg-gray-200">
+                      <div className="h-3 rounded-full bg-[var(--surface-2)]">
                         <div
                           className={`h-3 rounded-full transition-all ${achieved ? "bg-green-500" : "bg-blue-500"}`}
                           style={{ width: `${Math.min(100, (latest / goal.targetPercentage) * 100)}%` }}
                         />
                       </div>
                       {!achieved && goal.targetPercentage - latest > 0 && (
-                        <p className="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                        <p className="mt-1 text-xs text-[var(--muted)] flex items-center gap-1">
                           <TrendingUp size={12} /> あと{Math.round(goal.targetPercentage - latest)}%で目標達成
                         </p>
                       )}
@@ -134,10 +134,10 @@ export default function GoalsPage() {
                   {/* 目標設定 */}
                   {isEditing ? (
                     <div className="flex items-center gap-2">
-                      <input type="number" min={1} max={100} value={editValue} onChange={(e) => setEditValue(Number(e.target.value))} className="w-20 rounded border px-2 py-1 text-sm" />
-                      <span className="text-sm text-gray-600">%</span>
+                      <input type="number" min={1} max={100} value={editValue} onChange={(e) => setEditValue(Number(e.target.value))} className="w-20 rounded border border-[var(--border)] px-2 py-1 text-sm" />
+                      <span className="text-sm text-[var(--muted)]">%</span>
                       <button onClick={() => saveGoal(grade, editValue)} className="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700">設定</button>
-                      <button onClick={() => setEditingGrade(null)} className="rounded border px-3 py-1 text-sm text-gray-600">キャンセル</button>
+                      <button onClick={() => setEditingGrade(null)} className="rounded border border-[var(--border)] px-3 py-1 text-sm text-[var(--muted)]">キャンセル</button>
                     </div>
                   ) : (
                     <button

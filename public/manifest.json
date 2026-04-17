@@ -3,20 +3,23 @@
   "short_name": "英検演習",
   "description": "英検5級〜1級の過去問を解いて、自動採点・成績分析ができる学習アプリ",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#f9fafb",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#0b1220",
   "theme_color": "#2563eb",
-  "orientation": "portrait",
+  "orientation": "any",
+  "lang": "ja",
+  "categories": ["education"],
   "icons": [
-    {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "学習履歴", "url": "/history" },
+    { "name": "成績分析", "url": "/analytics" },
+    { "name": "弱点ドリル", "url": "/drill" }
   ]
 }

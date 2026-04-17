@@ -94,10 +94,10 @@ export default function ScanPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--background)]">
       <Header />
       <main className="mx-auto max-w-[1600px] px-3 py-4">
-        <h2 className="mb-4 text-lg font-bold text-gray-900">
+        <h2 className="mb-4 text-lg font-bold text-[var(--foreground)]">
           <Camera size={20} className="inline mr-2" />
           紙のマークシートを採点
         </h2>
@@ -105,11 +105,11 @@ export default function ScanPage() {
         {/* 試験選択 */}
         <div className="mb-4 flex flex-wrap items-end gap-3">
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1">試験を選択</label>
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-1">試験を選択</label>
             <select
               value={selectedExamId}
               onChange={(e) => { setSelectedExamId(e.target.value); handleReset(); }}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm"
             >
               <option value="">-- 試験を選んでください --</option>
               {pdfExams.map((e) => (
@@ -129,9 +129,9 @@ export default function ScanPage() {
         </div>
 
         {!selectedExamId && (
-          <div className="rounded-lg border bg-white py-20 text-center">
-            <Camera size={48} className="mx-auto text-gray-300" />
-            <p className="mt-4 text-gray-500">上で試験を選択してから、紙の答案を撮影してください</p>
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] py-20 text-center">
+            <Camera size={48} className="mx-auto text-[var(--muted)]" />
+            <p className="mt-4 text-[var(--muted)]">上で試験を選択してから、紙の答案を撮影してください</p>
           </div>
         )}
 
@@ -140,22 +140,22 @@ export default function ScanPage() {
             {/* 左: 答案写真 */}
             <div className="space-y-2">
               {imageUrl ? (
-                <div className="rounded-lg border bg-white overflow-hidden">
+                <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] overflow-hidden">
                   {/* ツールバー */}
-                  <div className="flex items-center justify-between border-b bg-gray-50 px-3 py-1.5">
-                    <span className="text-xs text-gray-600">答案画像</span>
+                  <div className="flex items-center justify-between border-b bg-[var(--background)] px-3 py-1.5">
+                    <span className="text-xs text-[var(--muted)]">答案画像</span>
                     <div className="flex items-center gap-1">
-                      <button onClick={() => setZoom((z) => Math.max(50, z - 25))} className="rounded p-1 text-gray-500 hover:bg-gray-200" title="縮小">
+                      <button onClick={() => setZoom((z) => Math.max(50, z - 25))} className="rounded p-1 text-[var(--muted)] hover:bg-[var(--surface-2)]" title="縮小">
                         <ZoomOut size={14} />
                       </button>
-                      <span className="text-xs text-gray-500 w-10 text-center">{zoom}%</span>
-                      <button onClick={() => setZoom((z) => Math.min(300, z + 25))} className="rounded p-1 text-gray-500 hover:bg-gray-200" title="拡大">
+                      <span className="text-xs text-[var(--muted)] w-10 text-center">{zoom}%</span>
+                      <button onClick={() => setZoom((z) => Math.min(300, z + 25))} className="rounded p-1 text-[var(--muted)] hover:bg-[var(--surface-2)]" title="拡大">
                         <ZoomIn size={14} />
                       </button>
-                      <button onClick={() => setZoom(100)} className="rounded p-1 text-gray-500 hover:bg-gray-200 ml-1" title="リセット">
+                      <button onClick={() => setZoom(100)} className="rounded p-1 text-[var(--muted)] hover:bg-[var(--surface-2)] ml-1" title="リセット">
                         <Move size={14} />
                       </button>
-                      <button onClick={() => { setImageUrl(null); if (fileInputRef.current) fileInputRef.current.value = ""; }} className="rounded p-1 text-gray-500 hover:bg-gray-200 ml-2" title="削除">
+                      <button onClick={() => { setImageUrl(null); if (fileInputRef.current) fileInputRef.current.value = ""; }} className="rounded p-1 text-[var(--muted)] hover:bg-[var(--surface-2)] ml-2" title="削除">
                         <X size={14} />
                       </button>
                     </div>
@@ -168,7 +168,7 @@ export default function ScanPage() {
               ) : (
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-white py-24 text-gray-400 hover:border-blue-400 hover:text-blue-500 transition"
+                  className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-[var(--border)] bg-[var(--surface)] py-24 text-[var(--muted)] hover:border-blue-400 hover:text-blue-500 transition"
                 >
                   <Camera size={48} className="mb-3" />
                   <p className="text-sm font-medium">タップして答案を撮影</p>
@@ -206,7 +206,7 @@ export default function ScanPage() {
                   <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 p-3 text-green-700 text-sm">
                     <CheckCircle size={18} /> 採点完了！結果が保存されました
                   </div>
-                  <button onClick={handleReset} className="w-full rounded-lg border px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                  <button onClick={handleReset} className="w-full rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--background)]">
                     別の答案を採点
                   </button>
                   <button onClick={() => router.push("/history")} className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">

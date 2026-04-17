@@ -7,6 +7,9 @@ import AudioPlayer from "@/app/components/AudioPlayer";
 import PdfViewer from "@/app/components/PdfViewer";
 import MarkSheet from "@/app/components/MarkSheet";
 import WritingAnswer from "@/app/components/WritingAnswer";
+import Timer from "@/app/components/Timer";
+import SpeakButton from "@/app/components/SpeakButton";
+import { useToast } from "@/app/components/Toast";
 import { useAuth } from "@/app/lib/auth-context";
 import { getQuestions, SAMPLE_EXAMS } from "@/app/lib/data";
 import { saveResult, notifyTeachersOfSubmission } from "@/app/lib/storage";
@@ -18,6 +21,7 @@ export default function QuizPage() {
   const { examId } = useParams();
   const router = useRouter();
   const { user } = useAuth();
+  const { toast } = useToast();
   const id = examId as string;
 
   const exam = SAMPLE_EXAMS.find((e) => e.id === id);
@@ -41,6 +45,18 @@ export default function QuizPage() {
   const startTimeRef = useRef(0);
 
   const getTimestamp = () => new Date().getTime();
+
+  // ===== 退出警告（解答中にページを離れようとしたら確認） =====
+  useEffect(() => {
+    const isAnswering = (Object.keys(textAnswers).length > 0 || Object.keys(markAnswers).length > 0) && !submitted;
+    if (!isAnswering) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "解答中です。本当に離れますか？";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [textAnswers, markAnswers, submitted]);
 
   const currentQuestion = questions[currentIndex];
   const totalQuestions = isPdfMode ? (exam?.questionCount ?? 0) : questions.length;
@@ -197,9 +213,9 @@ export default function QuizPage() {
 
   if (!exam) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[var(--background)]">
         <Header />
-        <div className="flex items-center justify-center py-32 text-gray-500">
+        <div className="flex items-center justify-center py-32 text-[var(--muted)]">
           試験が見つかりませんでした
         </div>
       </div>
@@ -209,10 +225,24 @@ export default function QuizPage() {
   // ===== PDF + マークシートモード =====
   if (isPdfMode) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[var(--background)]">
         <Header />
         <main className="mx-auto max-w-[1600px] px-3 py-4">
-          <h2 className="mb-3 text-lg font-bold text-gray-900">{exam.title}</h2>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-base sm:text-lg font-bold text-[var(--foreground)]">{exam.title}</h2>
+            {exam.timeLimitMinutes && (
+              <Timer
+                limitMinutes={exam.timeLimitMinutes}
+                active={!submitted && answeredCount > 0}
+                onTimeUp={() => {
+                  if (!submitted) {
+                    toast("制限時間です。自動採点します", "info");
+                    handleSubmit();
+                  }
+                }}
+              />
+            )}
+          </div>
 
           <div className="grid gap-4 lg:grid-cols-[4fr_1fr]">
             {/* 左: PDF + 音声 */}
@@ -224,7 +254,7 @@ export default function QuizPage() {
                 <PdfViewer src={exam.pdfUrl} title="問題用紙" />
               )}
               {!exam.pdfUrl && (
-                <div className="rounded-lg border bg-white py-20 text-center text-gray-400">
+                <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] py-20 text-center text-[var(--muted)]">
                   PDF URLが設定されていません
                 </div>
               )}
@@ -233,7 +263,7 @@ export default function QuizPage() {
             {/* 右: マークシート + ライティング */}
             <div className="space-y-4">
               {exam.listeningStartQ && (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-[var(--muted)]">
                   問1〜{exam.listeningStartQ - 1}: 筆記 / 問{exam.listeningStartQ}〜{exam.questionCount}: リスニング
                 </p>
               )}
@@ -277,7 +307,7 @@ export default function QuizPage() {
                       setMarkResults(null);
                       setSubmitted(false);
                     }}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border px-6 py-3 text-sm text-gray-700 hover:bg-gray-50"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--border)] px-6 py-3 text-sm text-[var(--foreground)] hover:bg-[var(--surface-2)]"
                   >
                     もう一度挑戦
                   </button>
@@ -292,12 +322,12 @@ export default function QuizPage() {
 
               {/* ライティング模範解答（採点後に表示） */}
               {submitted && exam.writingModelAnswer && (
-                <div className="rounded-lg border bg-amber-50 p-4">
-                  <h4 className="mb-2 text-sm font-bold text-amber-800">ライティング模範解答</h4>
+                <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-950/40">
+                  <h4 className="mb-2 text-sm font-bold text-amber-800 dark:text-amber-200">ライティング模範解答</h4>
                   {exam.writingTopic && (
-                    <p className="mb-3 text-xs text-amber-700">{exam.writingTopic}</p>
+                    <p className="mb-3 text-xs text-amber-700 dark:text-amber-300">{exam.writingTopic}</p>
                   )}
-                  <div className="whitespace-pre-wrap text-sm text-gray-800 leading-relaxed">
+                  <div className="whitespace-pre-wrap text-sm text-[var(--foreground)] leading-relaxed">
                     {exam.writingModelAnswer}
                   </div>
                 </div>
@@ -312,9 +342,9 @@ export default function QuizPage() {
   // ===== 従来の問題モード =====
   if (questions.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[var(--background)]">
         <Header />
-        <div className="flex items-center justify-center py-32 text-gray-500">
+        <div className="flex items-center justify-center py-32 text-[var(--muted)]">
           問題が見つかりませんでした
         </div>
       </div>
@@ -322,9 +352,19 @@ export default function QuizPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--background)]">
       <Header />
-      <main className="mx-auto max-w-3xl px-4 py-6">
+      <main
+        className="mx-auto max-w-3xl px-4 py-6"
+        onTouchStart={(e) => { (e.currentTarget as HTMLElement).dataset.tx = String(e.touches[0].clientX); }}
+        onTouchEnd={(e) => {
+          const startX = parseFloat((e.currentTarget as HTMLElement).dataset.tx ?? "0");
+          const dx = e.changedTouches[0].clientX - startX;
+          if (Math.abs(dx) < 60) return;
+          if (dx < 0 && currentIndex < totalQuestions - 1) setCurrentIndex(currentIndex + 1);
+          if (dx > 0 && currentIndex > 0) setCurrentIndex(currentIndex - 1);
+        }}
+      >
         {/* 音声・PDF */}
         {(exam.audioUrl || exam.pdfUrl) && (
           <div className="mb-6 space-y-4">
@@ -333,14 +373,24 @@ export default function QuizPage() {
           </div>
         )}
 
-        {/* 進捗 */}
-        <div className="mb-4 flex items-center justify-between text-sm text-gray-600">
+        {/* 上部バー: 進捗 + タイマー */}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm text-[var(--muted)]">
           <span>問題 {currentIndex + 1} / {totalQuestions}</span>
           <span className="flex items-center gap-1">
             <Clock size={14} /> 回答済み: {answeredCount}/{totalQuestions}
           </span>
+          {exam.timeLimitMinutes && (
+            <Timer
+              limitMinutes={exam.timeLimitMinutes}
+              active={answeredCount > 0 && !submitting}
+              onTimeUp={() => {
+                toast("制限時間です。自動採点します", "info");
+                handleSubmit();
+              }}
+            />
+          )}
         </div>
-        <div className="mb-6 h-2 w-full rounded-full bg-gray-200">
+        <div className="mb-6 h-2 w-full rounded-full bg-[var(--surface-2)]">
           <div className="h-2 rounded-full bg-blue-500 transition-all" style={{ width: `${((currentIndex + 1) / totalQuestions) * 100}%` }} />
         </div>
 
@@ -349,10 +399,10 @@ export default function QuizPage() {
           {questions.map((q, i) => (
             <button
               key={q.id} onClick={() => setCurrentIndex(i)}
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium transition ${
+              className={`flex h-9 w-9 sm:h-8 sm:w-8 items-center justify-center rounded-full text-xs font-medium transition ${
                 i === currentIndex ? "bg-blue-600 text-white"
-                : textAnswers[q.id] ? "bg-blue-100 text-blue-700"
-                : "bg-gray-200 text-gray-600"
+                : textAnswers[q.id] ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200"
+                : "bg-[var(--surface-2)] text-[var(--muted)]"
               }`}
             >
               {q.number}
@@ -363,7 +413,10 @@ export default function QuizPage() {
         {/* 問題 */}
         {currentQuestion && (
           <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-            <p className="mb-1 text-sm font-medium text-[var(--muted)]">第{currentQuestion.number}問</p>
+            <div className="mb-1 flex items-center justify-between">
+              <p className="text-sm font-medium text-[var(--muted)]">第{currentQuestion.number}問</p>
+              <SpeakButton text={currentQuestion.text} />
+            </div>
             <p className="mb-6 whitespace-pre-wrap text-lg text-[var(--foreground)]">{currentQuestion.text}</p>
             <div className="space-y-3">
               {currentQuestion.choices.map((choice, idx) => {
@@ -402,7 +455,7 @@ export default function QuizPage() {
           <button
             onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
             disabled={currentIndex === 0}
-            className="flex items-center gap-1 rounded-md border px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-30"
+            className="flex items-center gap-1 rounded-md border border-[var(--border)] px-4 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-2)] disabled:opacity-30"
           >
             <ArrowLeft size={16} /> 前の問題
           </button>

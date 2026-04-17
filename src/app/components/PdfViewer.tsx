@@ -12,10 +12,10 @@ export default function PdfViewer({ src, title }: PdfViewerProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className={`rounded-lg border bg-white overflow-hidden ${expanded ? "fixed inset-4 z-50 shadow-2xl" : ""}`}>
+    <div className={`rounded-lg border bg-[var(--surface)] overflow-hidden ${expanded ? "fixed inset-4 z-50 shadow-2xl" : ""}`}>
       {/* ヘッダー */}
-      <div className="flex items-center justify-between border-b bg-gray-50 px-4 py-2">
-        <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+      <div className="flex items-center justify-between border-b bg-[var(--background)] px-4 py-2">
+        <div className="flex items-center gap-2 text-sm font-medium text-[var(--foreground)]">
           <FileText size={16} className="text-red-500" />
           {title ?? "問題PDF"}
         </div>
@@ -24,14 +24,14 @@ export default function PdfViewer({ src, title }: PdfViewerProps) {
             href={src}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded p-1.5 text-gray-500 hover:bg-gray-200"
+            className="rounded p-1.5 text-[var(--muted)] hover:bg-[var(--surface-2)]"
             title="別タブで開く"
           >
             <Download size={14} />
           </a>
           <button
             onClick={() => setExpanded(!expanded)}
-            className="rounded p-1.5 text-gray-500 hover:bg-gray-200"
+            className="rounded p-1.5 text-[var(--muted)] hover:bg-[var(--surface-2)]"
             title={expanded ? "縮小" : "拡大"}
           >
             {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}

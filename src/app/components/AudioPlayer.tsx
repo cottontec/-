@@ -79,7 +79,7 @@ export default function AudioPlayer({ src, title }: AudioPlayerProps) {
   };
 
   return (
-    <div className="rounded-lg border bg-white p-4">
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
       <audio
         ref={audioRef}
         src={src}
@@ -90,7 +90,7 @@ export default function AudioPlayer({ src, title }: AudioPlayerProps) {
       />
 
       {title && (
-        <div className="mb-3 flex items-center gap-2 text-sm font-medium text-gray-700">
+        <div className="mb-3 flex items-center gap-2 text-sm font-medium text-[var(--foreground)]">
           <Volume2 size={16} className="text-blue-500" />
           {title}
         </div>
@@ -98,7 +98,7 @@ export default function AudioPlayer({ src, title }: AudioPlayerProps) {
 
       {/* プログレスバー */}
       <div
-        className="mb-3 h-2 cursor-pointer rounded-full bg-gray-200"
+        className="mb-3 h-2 cursor-pointer rounded-full bg-[var(--surface-2)]"
         onClick={handleSeek}
       >
         <div
@@ -109,7 +109,7 @@ export default function AudioPlayer({ src, title }: AudioPlayerProps) {
 
       <div className="flex items-center justify-between">
         {/* 時間表示 */}
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-[var(--muted)]">
           {formatTime(currentTime)} / {formatTime(duration)}
         </span>
 
@@ -117,7 +117,7 @@ export default function AudioPlayer({ src, title }: AudioPlayerProps) {
         <div className="flex items-center gap-2">
           <button
             onClick={restart}
-            className="rounded-full p-2 text-gray-600 hover:bg-gray-100"
+            className="rounded-full p-2 text-[var(--muted)] hover:bg-[var(--surface-2)]"
             title="最初から"
           >
             <RotateCcw size={16} />
@@ -132,7 +132,7 @@ export default function AudioPlayer({ src, title }: AudioPlayerProps) {
 
           <button
             onClick={changeSpeed}
-            className="rounded-md border px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100"
+            className="rounded-md border border-[var(--border)] px-2 py-1 text-xs font-medium text-[var(--muted)] hover:bg-[var(--surface-2)]"
             title="再生速度"
           >
             {speed}x

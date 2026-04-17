@@ -90,41 +90,41 @@ export default function CalendarPage() {
   const MONTHS = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--background)]">
       <Header />
       <main className="mx-auto max-w-2xl px-4 py-8">
-        <h2 className="mb-6 text-2xl font-bold text-gray-900">
+        <h2 className="mb-6 text-2xl font-bold text-[var(--foreground)]">
           <Calendar size={24} className="inline mr-2 text-blue-600" /> 学習カレンダー
         </h2>
 
         {/* ストリーク・統計 */}
         <div className="mb-6 grid grid-cols-3 gap-3">
-          <div className="rounded-lg border bg-white p-4 text-center">
-            <Flame size={24} className={`mx-auto mb-1 ${streak > 0 ? "text-orange-500" : "text-gray-300"}`} />
-            <p className="text-2xl font-bold text-gray-900">{streak}</p>
-            <p className="text-xs text-gray-500">連続学習日数</p>
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 text-center">
+            <Flame size={24} className={`mx-auto mb-1 ${streak > 0 ? "text-orange-500" : "text-[var(--muted)]"}`} />
+            <p className="text-2xl font-bold text-[var(--foreground)]">{streak}</p>
+            <p className="text-xs text-[var(--muted)]">連続学習日数</p>
           </div>
-          <div className="rounded-lg border bg-white p-4 text-center">
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 text-center">
             <p className="text-2xl font-bold text-blue-600">{monthTotal}</p>
-            <p className="text-xs text-gray-500">{MONTHS[month]}の受験回数</p>
+            <p className="text-xs text-[var(--muted)]">{MONTHS[month]}の受験回数</p>
           </div>
-          <div className="rounded-lg border bg-white p-4 text-center">
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 text-center">
             <p className="text-2xl font-bold text-green-600">{results.length}</p>
-            <p className="text-xs text-gray-500">累計受験回数</p>
+            <p className="text-xs text-[var(--muted)]">累計受験回数</p>
           </div>
         </div>
 
         {/* カレンダー */}
-        <div className="rounded-lg border bg-white p-4">
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
           <div className="mb-4 flex items-center justify-between">
-            <button onClick={prevMonth} className="rounded p-1 hover:bg-gray-100"><ChevronLeft size={20} /></button>
-            <h3 className="text-lg font-bold text-gray-900">{year}年 {MONTHS[month]}</h3>
-            <button onClick={nextMonth} className="rounded p-1 hover:bg-gray-100"><ChevronRight size={20} /></button>
+            <button onClick={prevMonth} className="rounded p-1 hover:bg-[var(--surface-2)]"><ChevronLeft size={20} /></button>
+            <h3 className="text-lg font-bold text-[var(--foreground)]">{year}年 {MONTHS[month]}</h3>
+            <button onClick={nextMonth} className="rounded p-1 hover:bg-[var(--surface-2)]"><ChevronRight size={20} /></button>
           </div>
 
           <div className="grid grid-cols-7 gap-1">
             {DAYS.map((d) => (
-              <div key={d} className="py-1 text-center text-xs font-bold text-gray-500">{d}</div>
+              <div key={d} className="py-1 text-center text-xs font-bold text-[var(--muted)]">{d}</div>
             ))}
             {weeks.flat().map((day, i) => {
               if (day === null) return <div key={i} />;
@@ -139,9 +139,9 @@ export default function CalendarPage() {
                   key={i}
                   className={`relative flex flex-col items-center rounded-lg py-2 text-sm ${
                     isToday ? "ring-2 ring-blue-500" : ""
-                  } ${hasStudy ? "bg-green-100" : "hover:bg-gray-50"}`}
+                  } ${hasStudy ? "bg-green-100" : "hover:bg-[var(--background)]"}`}
                 >
-                  <span className={`${hasStudy ? "font-bold text-green-800" : "text-gray-700"}`}>{day}</span>
+                  <span className={`${hasStudy ? "font-bold text-green-800" : "text-[var(--foreground)]"}`}>{day}</span>
                   {dayResults && (
                     <div className="mt-0.5 flex gap-0.5">
                       {dayResults.slice(0, 3).map((r, j) => (
@@ -154,7 +154,7 @@ export default function CalendarPage() {
             })}
           </div>
 
-          <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
+          <div className="mt-3 flex items-center gap-4 text-xs text-[var(--muted)]">
             <span className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-green-500" /> 70%以上</span>
             <span className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-yellow-500" /> 50-69%</span>
             <span className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-red-500" /> 50%未満</span>

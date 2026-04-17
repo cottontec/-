@@ -40,11 +40,11 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--background)]">
       <Header />
       <main className="mx-auto max-w-2xl px-4 py-8">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">お知らせ</h2>
+          <h2 className="text-2xl font-bold text-[var(--foreground)]">お知らせ</h2>
           {notifications.some((n) => !n.read) && (
             <button onClick={handleMarkAllRead} className="flex items-center gap-1 text-sm text-blue-600 hover:underline">
               <CheckCheck size={16} /> すべて既読にする
@@ -53,7 +53,7 @@ export default function NotificationsPage() {
         </div>
 
         {loading ? (
-          <div className="py-12 text-center text-gray-500">読み込み中...</div>
+          <div className="py-12 text-center text-[var(--muted)]">読み込み中...</div>
         ) : notifications.length > 0 ? (
           <div className="space-y-2">
             {notifications.map((n) => {
@@ -62,15 +62,15 @@ export default function NotificationsPage() {
                 <div
                   key={n.id}
                   onClick={() => handleMarkRead(n.id)}
-                  className={`rounded-lg border p-4 transition ${n.read ? "bg-white" : "border-blue-200 bg-blue-50"}`}
+                  className={`rounded-lg border p-4 transition ${n.read ? "bg-[var(--surface)]" : "border-blue-200 bg-blue-50"}`}
                 >
                   <div className="flex items-start gap-3">
-                    <Icon size={18} className={n.read ? "text-gray-400" : "text-blue-600"} />
+                    <Icon size={18} className={n.read ? "text-[var(--muted)]" : "text-blue-600"} />
                     <div className="flex-1">
-                      <p className={`text-sm font-medium ${n.read ? "text-gray-700" : "text-gray-900"}`}>{n.title}</p>
-                      <p className="mt-0.5 text-sm text-gray-600">{n.message}</p>
+                      <p className={`text-sm font-medium ${n.read ? "text-[var(--foreground)]" : "text-[var(--foreground)]"}`}>{n.title}</p>
+                      <p className="mt-0.5 text-sm text-[var(--muted)]">{n.message}</p>
                       <div className="mt-2 flex items-center justify-between">
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-[var(--muted)]">
                           {new Date(n.createdAt).toLocaleDateString("ja-JP", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                         </span>
                         {n.link && (
@@ -85,9 +85,9 @@ export default function NotificationsPage() {
             })}
           </div>
         ) : (
-          <div className="rounded-lg border bg-white py-12 text-center">
-            <Bell size={48} className="mx-auto text-gray-300" />
-            <p className="mt-4 text-gray-500">お知らせはまだありません</p>
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] py-12 text-center">
+            <Bell size={48} className="mx-auto text-[var(--muted)]" />
+            <p className="mt-4 text-[var(--muted)]">お知らせはまだありません</p>
           </div>
         )}
       </main>

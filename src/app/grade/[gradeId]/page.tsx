@@ -23,22 +23,22 @@ export default function GradePage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--background)]">
       <Header />
       <main className="mx-auto max-w-3xl px-4 py-8">
-        <Link href="/" className="mb-4 inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
+        <Link href="/" className="mb-4 inline-flex items-center gap-1 text-sm text-[var(--muted)] hover:text-[var(--foreground)]">
           <ArrowLeft size={16} /> ホームに戻る
         </Link>
 
-        <h2 className="mb-6 text-2xl font-bold text-gray-900">{info?.label ?? grade} 過去問一覧</h2>
+        <h2 className="mb-6 text-2xl font-bold text-[var(--foreground)]">{info?.label ?? grade} 過去問一覧</h2>
 
         {grouped.size > 0 ? (
           <div className="space-y-6">
             {Array.from(grouped.entries()).map(([key, sectionExams]) => {
               const first = sectionExams![0];
               return (
-                <div key={key} className="rounded-lg border bg-white p-6">
-                  <h3 className="mb-4 text-lg font-semibold text-gray-900">
+                <div key={key} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6">
+                  <h3 className="mb-4 text-lg font-semibold text-[var(--foreground)]">
                     {first.year}年 第{first.session}回
                   </h3>
                   <div className="space-y-2">
@@ -46,18 +46,18 @@ export default function GradePage() {
                       <Link
                         key={exam.id}
                         href={`/quiz/${exam.id}`}
-                        className="flex items-center justify-between rounded-md border px-4 py-3 transition hover:bg-gray-50"
+                        className="flex items-center justify-between rounded-md border border-[var(--border)] px-4 py-3 transition hover:bg-[var(--background)]"
                       >
                         <div className="flex items-center gap-3">
-                          <FileText size={18} className="text-gray-400" />
+                          <FileText size={18} className="text-[var(--muted)]" />
                           <div>
-                            <p className="flex items-center gap-2 font-medium text-gray-900">
+                            <p className="flex items-center gap-2 font-medium text-[var(--foreground)]">
                               {SECTION_LABELS[exam.section] ?? exam.section}
                               {exam.answerKey && (
                                 <span className="rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700">マークシート</span>
                               )}
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-[var(--muted)]">
                               {exam.questionCount}問
                               {exam.timeLimitMinutes ? ` / ${exam.timeLimitMinutes}分` : ""}
                             </p>
@@ -71,9 +71,9 @@ export default function GradePage() {
             })}
           </div>
         ) : (
-          <div className="rounded-lg border bg-white py-12 text-center">
-            <FileText size={48} className="mx-auto text-gray-300" />
-            <p className="mt-4 text-gray-500">この級の過去問はまだ登録されていません</p>
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] py-12 text-center">
+            <FileText size={48} className="mx-auto text-[var(--muted)]" />
+            <p className="mt-4 text-[var(--muted)]">この級の過去問はまだ登録されていません</p>
           </div>
         )}
       </main>

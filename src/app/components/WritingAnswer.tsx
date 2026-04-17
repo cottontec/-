@@ -46,16 +46,16 @@ export default function WritingAnswer({
   };
 
   return (
-    <div className="rounded-lg border bg-white p-4">
-      <h3 className="mb-3 text-lg font-bold text-gray-900">ライティング解答</h3>
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+      <h3 className="mb-3 text-lg font-bold text-[var(--foreground)]">ライティング解答</h3>
 
       {/* モード切替 */}
       {!readOnly && (
-        <div className="mb-3 flex rounded-lg bg-gray-100 p-1">
+        <div className="mb-3 flex rounded-lg bg-[var(--surface-2)] p-1">
           <button
             onClick={() => setMode("text")}
             className={`flex flex-1 items-center justify-center gap-1 rounded-md py-2 text-sm font-medium transition ${
-              mode === "text" ? "bg-white shadow text-gray-900" : "text-gray-500"
+              mode === "text" ? "bg-[var(--surface)] shadow text-[var(--foreground)]" : "text-[var(--muted)]"
             }`}
           >
             <Type size={14} /> テキスト入力
@@ -63,7 +63,7 @@ export default function WritingAnswer({
           <button
             onClick={() => setMode("photo")}
             className={`flex flex-1 items-center justify-center gap-1 rounded-md py-2 text-sm font-medium transition ${
-              mode === "photo" ? "bg-white shadow text-gray-900" : "text-gray-500"
+              mode === "photo" ? "bg-[var(--surface)] shadow text-[var(--foreground)]" : "text-[var(--muted)]"
             }`}
           >
             <Camera size={14} /> 写真で撮る
@@ -77,7 +77,7 @@ export default function WritingAnswer({
           value={text}
           onChange={(e) => handleTextChange(e.target.value)}
           readOnly={readOnly}
-          className="w-full rounded-md border px-3 py-2 text-sm leading-relaxed"
+          className="w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm leading-relaxed"
           rows={8}
           placeholder="ここに英文を入力してください..."
         />
@@ -91,7 +91,7 @@ export default function WritingAnswer({
               <img
                 src={imageDataUrl}
                 alt="解答写真"
-                className="w-full rounded-md border"
+                className="w-full rounded-md border border-[var(--border)]"
               />
               {!readOnly && (
                 <button
@@ -105,7 +105,7 @@ export default function WritingAnswer({
           ) : (
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-gray-300 py-12 text-gray-400 hover:border-blue-400 hover:text-blue-500"
+              className="flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-[var(--border)] py-12 text-[var(--muted)] hover:border-blue-400 hover:text-blue-500"
             >
               <Upload size={32} className="mb-2" />
               <p className="text-sm">タップして写真を選択</p>
@@ -125,7 +125,7 @@ export default function WritingAnswer({
 
       {/* 文字数カウント */}
       {mode === "text" && (
-        <div className="mt-2 text-right text-xs text-gray-400">
+        <div className="mt-2 text-right text-xs text-[var(--muted)]">
           {text.split(/\s+/).filter(Boolean).length} words
         </div>
       )}

@@ -84,34 +84,34 @@ export default function DrillPage() {
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--background)]">
       <Header />
       <main className="mx-auto max-w-3xl px-4 py-8">
-        <h2 className="mb-6 text-2xl font-bold text-gray-900">
+        <h2 className="mb-6 text-2xl font-bold text-[var(--foreground)]">
           <RefreshCw size={24} className="inline mr-2 text-orange-600" /> 弱点克服ドリル
         </h2>
 
         {loading ? (
-          <div className="py-12 text-center text-gray-500">読み込み中...</div>
+          <div className="py-12 text-center text-[var(--muted)]">読み込み中...</div>
         ) : (
           <>
             {/* 弱点大問 */}
             <section className="mb-8">
-              <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-900">
+              <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-[var(--foreground)]">
                 <AlertTriangle size={18} className="text-red-500" /> 重点対策エリア
               </h3>
               {weakAreas.length > 0 ? (
                 <div className="space-y-2">
                   {weakAreas.map((w) => (
-                    <div key={w.sectionName} className="rounded-lg border bg-white p-4">
+                    <div key={w.sectionName} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
                       <div className="flex items-center justify-between mb-2">
                         <div>
-                          <p className="font-medium text-gray-900">{w.sectionName}</p>
-                          <p className="text-xs text-gray-500">{w.examCount}回の試験で計測</p>
+                          <p className="font-medium text-[var(--foreground)]">{w.sectionName}</p>
+                          <p className="text-xs text-[var(--muted)]">{w.examCount}回の試験で計測</p>
                         </div>
                         <span className="text-xl font-bold text-red-600">{w.avgPercentage}%</span>
                       </div>
-                      <div className="h-2 rounded-full bg-gray-200 mb-2">
+                      <div className="h-2 rounded-full bg-[var(--surface-2)] mb-2">
                         <div className="h-2 rounded-full bg-red-500" style={{ width: `${w.avgPercentage}%` }} />
                       </div>
                       {w.examIds[0] && (
@@ -123,7 +123,7 @@ export default function DrillPage() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-lg border bg-green-50 py-8 text-center">
+                <div className="rounded-lg border border-[var(--border)] bg-green-50 py-8 text-center">
                   <p className="text-green-700 font-medium">弱点は見つかりませんでした！</p>
                   <p className="text-sm text-green-600">すべての分野で70%以上です。素晴らしい！</p>
                 </div>
@@ -132,15 +132,15 @@ export default function DrillPage() {
 
             {/* 間違えた問題 */}
             <section>
-              <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-900">
+              <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-[var(--foreground)]">
                 <TrendingDown size={18} className="text-yellow-600" /> 間違えた問題が多い試験
               </h3>
               {wrongQuestions.length > 0 ? (
                 <div className="space-y-2">
                   {wrongQuestions.slice(0, 10).map((w) => (
-                    <Link key={w.examId} href={`/quiz/${w.examId}`} className="flex items-center justify-between rounded-lg border bg-white px-4 py-3 hover:bg-gray-50 transition">
+                    <Link key={w.examId} href={`/quiz/${w.examId}`} className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3 hover:bg-[var(--background)] transition">
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{w.examTitle}</p>
+                        <p className="text-sm font-medium text-[var(--foreground)]">{w.examTitle}</p>
                         <p className="text-xs text-red-500">{w.count}問不正解</p>
                       </div>
                       <span className="flex items-center gap-1 text-sm text-blue-600">
@@ -150,7 +150,7 @@ export default function DrillPage() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-lg border bg-white py-8 text-center text-gray-500">
+                <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] py-8 text-center text-[var(--muted)]">
                   まだデータがありません。過去問を解くと表示されます。
                 </div>
               )}

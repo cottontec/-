@@ -63,28 +63,28 @@ export default function TeachingPointsPage() {
   };
 
   if (!user || user.role !== "teacher") {
-    return <div className="min-h-screen bg-gray-50"><Header /><div className="flex items-center justify-center py-32 text-gray-500">先生アカウントでログインしてください</div></div>;
+    return <div className="min-h-screen bg-[var(--background)]"><Header /><div className="flex items-center justify-center py-32 text-[var(--muted)]">先生アカウントでログインしてください</div></div>;
   }
 
   if (loading) {
-    return <div className="min-h-screen bg-gray-50"><Header /><div className="flex items-center justify-center py-32 text-gray-500">読み込み中...</div></div>;
+    return <div className="min-h-screen bg-[var(--background)]"><Header /><div className="flex items-center justify-center py-32 text-[var(--muted)]">読み込み中...</div></div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--background)]">
       <Header />
       <main className="mx-auto max-w-3xl px-4 py-8">
-        <Link href="/teacher" className="mb-4 inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
+        <Link href="/teacher" className="mb-4 inline-flex items-center gap-1 text-sm text-[var(--muted)] hover:text-[var(--foreground)]">
           <ArrowLeft size={16} /> クラス管理に戻る
         </Link>
 
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-[var(--foreground)]">
               <GraduationCap size={24} className="inline mr-2 text-purple-600" />
               指導ポイント
             </h2>
-            <p className="mt-1 text-sm text-gray-500">{gradeLabel} {exam?.title ?? id}</p>
+            <p className="mt-1 text-sm text-[var(--muted)]">{gradeLabel} {exam?.title ?? id}</p>
           </div>
           <div className="flex items-center gap-2">
             {saved && <span className="text-sm text-green-600">保存しました</span>}
@@ -102,22 +102,22 @@ export default function TeachingPointsPage() {
 
         <div className="space-y-4">
           {sections.map((sec, i) => (
-            <div key={sec.name} className="rounded-lg border bg-white p-5">
-              <h3 className="mb-3 text-lg font-semibold text-gray-900">{sec.name}</h3>
+            <div key={sec.name} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+              <h3 className="mb-3 text-lg font-semibold text-[var(--foreground)]">{sec.name}</h3>
 
               {editing ? (
                 <div className="space-y-3">
                   <div>
                     <label className="block text-xs font-bold text-purple-700 mb-1">指導のポイント</label>
-                    <textarea value={sec.point} onChange={(e) => updateSection(i, "point", e.target.value)} className="w-full rounded-md border px-3 py-2 text-sm" rows={3} placeholder="この大問の指導ポイントを入力..." />
+                    <textarea value={sec.point} onChange={(e) => updateSection(i, "point", e.target.value)} className="w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm" rows={3} placeholder="この大問の指導ポイントを入力..." />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-red-700 mb-1">よくある間違い</label>
-                    <textarea value={sec.commonMistakes} onChange={(e) => updateSection(i, "commonMistakes", e.target.value)} className="w-full rounded-md border px-3 py-2 text-sm" rows={3} placeholder="生徒がよく間違えるパターン..." />
+                    <textarea value={sec.commonMistakes} onChange={(e) => updateSection(i, "commonMistakes", e.target.value)} className="w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm" rows={3} placeholder="生徒がよく間違えるパターン..." />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-blue-700 mb-1">指導アドバイス</label>
-                    <textarea value={sec.advice} onChange={(e) => updateSection(i, "advice", e.target.value)} className="w-full rounded-md border px-3 py-2 text-sm" rows={3} placeholder="どう指導すべきか..." />
+                    <textarea value={sec.advice} onChange={(e) => updateSection(i, "advice", e.target.value)} className="w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm" rows={3} placeholder="どう指導すべきか..." />
                   </div>
                 </div>
               ) : (
@@ -126,23 +126,23 @@ export default function TeachingPointsPage() {
                     <>
                       <div className="rounded bg-purple-50 p-3">
                         <p className="text-xs font-bold text-purple-700 mb-1">指導のポイント</p>
-                        <p className="whitespace-pre-wrap text-sm text-gray-700">{sec.point}</p>
+                        <p className="whitespace-pre-wrap text-sm text-[var(--foreground)]">{sec.point}</p>
                       </div>
                       {sec.commonMistakes && (
                         <div className="rounded bg-red-50 p-3">
                           <p className="text-xs font-bold text-red-700 mb-1">よくある間違い</p>
-                          <p className="whitespace-pre-wrap text-sm text-gray-700">{sec.commonMistakes}</p>
+                          <p className="whitespace-pre-wrap text-sm text-[var(--foreground)]">{sec.commonMistakes}</p>
                         </div>
                       )}
                       {sec.advice && (
                         <div className="rounded bg-blue-50 p-3">
                           <p className="text-xs font-bold text-blue-700 mb-1">指導アドバイス</p>
-                          <p className="whitespace-pre-wrap text-sm text-gray-700">{sec.advice}</p>
+                          <p className="whitespace-pre-wrap text-sm text-[var(--foreground)]">{sec.advice}</p>
                         </div>
                       )}
                     </>
                   ) : (
-                    <p className="text-sm text-gray-400">まだ指導ポイントが入力されていません。「編集」をクリックして入力してください。</p>
+                    <p className="text-sm text-[var(--muted)]">まだ指導ポイントが入力されていません。「編集」をクリックして入力してください。</p>
                   )}
                 </div>
               )}

@@ -68,26 +68,26 @@ export default function ImportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--background)]">
       <Header />
       <main className="mx-auto max-w-3xl px-4 py-8">
-        <h2 className="mb-6 text-2xl font-bold text-gray-900">CSV問題インポート</h2>
+        <h2 className="mb-6 text-2xl font-bold text-[var(--foreground)]">CSV問題インポート</h2>
 
-        <div className="rounded-lg border bg-white p-6">
-          <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-900">
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6">
+          <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-[var(--foreground)]">
             <Upload size={20} /> CSVフォーマット
           </h3>
-          <div className="mb-4 rounded bg-gray-50 p-3 font-mono text-xs text-gray-700">
+          <div className="mb-4 rounded bg-[var(--background)] p-3 font-mono text-xs text-[var(--foreground)]">
             examId,number,text,choice1,choice2,choice3,choice4,correctAnswer,explanation
           </div>
-          <p className="mb-4 text-sm text-gray-600">
-            examIdは <code className="rounded bg-gray-100 px-1">{"{grade}-{year}-{session}"}</code> 形式（例: 3kyu-2024-1）
+          <p className="mb-4 text-sm text-[var(--muted)]">
+            examIdは <code className="rounded bg-[var(--surface-2)] px-1">{"{grade}-{year}-{session}"}</code> 形式（例: 3kyu-2024-1）
           </p>
 
           <textarea
             value={csvText}
             onChange={(e) => { setCsvText(e.target.value); setParsed([]); setImported(false); }}
-            className="mb-4 w-full rounded-md border px-3 py-2 font-mono text-sm"
+            className="mb-4 w-full rounded-md border border-[var(--border)] px-3 py-2 font-mono text-sm"
             rows={8}
             placeholder="CSVデータを貼り付けてください..."
           />
@@ -112,16 +112,16 @@ export default function ImportPage() {
 
         {parsed.length > 0 && !imported && (
           <div className="mt-6">
-            <h3 className="mb-3 text-lg font-semibold text-gray-900">プレビュー ({parsed.length}問)</h3>
+            <h3 className="mb-3 text-lg font-semibold text-[var(--foreground)]">プレビュー ({parsed.length}問)</h3>
             <div className="space-y-2">
               {parsed.slice(0, 5).map((p, i) => (
-                <div key={i} className="rounded-lg border bg-white p-3 text-sm">
-                  <p className="font-medium text-gray-900">[{p.examId}] 第{p.number}問</p>
-                  <p className="text-gray-700">{p.text}</p>
-                  <p className="text-xs text-gray-500">正解: {p.correctAnswer}</p>
+                <div key={i} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 text-sm">
+                  <p className="font-medium text-[var(--foreground)]">[{p.examId}] 第{p.number}問</p>
+                  <p className="text-[var(--foreground)]">{p.text}</p>
+                  <p className="text-xs text-[var(--muted)]">正解: {p.correctAnswer}</p>
                 </div>
               ))}
-              {parsed.length > 5 && <p className="text-sm text-gray-400">...他 {parsed.length - 5}問</p>}
+              {parsed.length > 5 && <p className="text-sm text-[var(--muted)]">...他 {parsed.length - 5}問</p>}
             </div>
           </div>
         )}

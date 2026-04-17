@@ -41,49 +41,49 @@ export default function TeacherPage() {
 
   if (!user || user.role !== "teacher") {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[var(--background)]">
         <Header />
-        <div className="flex items-center justify-center py-32 text-gray-500">先生アカウントでログインしてください</div>
+        <div className="flex items-center justify-center py-32 text-[var(--muted)]">先生アカウントでログインしてください</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--background)]">
       <Header />
       <main className="mx-auto max-w-3xl px-4 py-8">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">クラス管理</h2>
+          <h2 className="text-2xl font-bold text-[var(--foreground)]">クラス管理</h2>
           <button onClick={() => setShowCreate(true)} className="flex items-center gap-1 rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">
             <Plus size={16} /> 新規クラス
           </button>
         </div>
 
         {showCreate && (
-          <form onSubmit={handleCreate} className="mb-6 rounded-lg border bg-white p-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">クラス名</label>
+          <form onSubmit={handleCreate} className="mb-6 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">クラス名</label>
             <div className="flex gap-2">
-              <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} className="flex-1 rounded-md border px-3 py-2 text-sm" placeholder="例: 3年A組" required />
+              <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} className="flex-1 rounded-md border border-[var(--border)] px-3 py-2 text-sm" placeholder="例: 3年A組" required />
               <button type="submit" className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">作成</button>
-              <button type="button" onClick={() => setShowCreate(false)} className="rounded-md border px-4 py-2 text-sm text-gray-600">キャンセル</button>
+              <button type="button" onClick={() => setShowCreate(false)} className="rounded-md border border-[var(--border)] px-4 py-2 text-sm text-[var(--muted)]">キャンセル</button>
             </div>
           </form>
         )}
 
         {loading ? (
-          <div className="py-12 text-center text-gray-500">読み込み中...</div>
+          <div className="py-12 text-center text-[var(--muted)]">読み込み中...</div>
         ) : classes.length > 0 ? (
           <div className="space-y-3">
             {classes.map((cls) => (
-              <Link key={cls.id} href={`/teacher/class/${cls.id}`} className="flex items-center justify-between rounded-lg border bg-white px-4 py-4 transition hover:shadow-sm">
+              <Link key={cls.id} href={`/teacher/class/${cls.id}`} className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-4 transition hover:shadow-sm">
                 <div className="flex items-center gap-3">
                   <Users size={20} className="text-blue-500" />
                   <div>
-                    <p className="font-medium text-gray-900">{cls.name}</p>
-                    <p className="text-xs text-gray-400">{new Date(cls.createdAt).toLocaleDateString("ja-JP")}</p>
+                    <p className="font-medium text-[var(--foreground)]">{cls.name}</p>
+                    <p className="text-xs text-[var(--muted)]">{new Date(cls.createdAt).toLocaleDateString("ja-JP")}</p>
                   </div>
                 </div>
-                <button onClick={(e) => { e.preventDefault(); copyCode(cls.inviteCode); }} className="flex items-center gap-1 rounded border px-2 py-1 text-xs text-gray-600 hover:bg-gray-50">
+                <button onClick={(e) => { e.preventDefault(); copyCode(cls.inviteCode); }} className="flex items-center gap-1 rounded border border-[var(--border)] px-2 py-1 text-xs text-[var(--muted)] hover:bg-[var(--background)]">
                   <ClipboardCopy size={12} />
                   {copied === cls.inviteCode ? "コピー済み" : cls.inviteCode}
                 </button>
@@ -91,9 +91,9 @@ export default function TeacherPage() {
             ))}
           </div>
         ) : (
-          <div className="rounded-lg border bg-white py-12 text-center">
-            <Users size={48} className="mx-auto text-gray-300" />
-            <p className="mt-4 text-gray-500">まだクラスがありません</p>
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] py-12 text-center">
+            <Users size={48} className="mx-auto text-[var(--muted)]" />
+            <p className="mt-4 text-[var(--muted)]">まだクラスがありません</p>
           </div>
         )}
       </main>

@@ -5,6 +5,9 @@ import { AuthProvider } from "@/app/lib/auth-context";
 import { ThemeProvider, themeInitScript } from "@/app/lib/theme-context";
 import { ServiceWorkerRegistrar } from "@/app/components/ServiceWorkerRegistrar";
 import BottomNav from "@/app/components/BottomNav";
+import PwaInstallPrompt from "@/app/components/PwaInstallPrompt";
+import { ToastProvider } from "@/app/components/Toast";
+import ErrorBoundary from "@/app/components/ErrorBoundary";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -40,8 +43,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full bg-[var(--background)] text-[var(--foreground)]">
         <ThemeProvider>
           <AuthProvider>
-            {children}
-            <BottomNav />
+            <ToastProvider>
+              <ErrorBoundary>{children}</ErrorBoundary>
+              <BottomNav />
+              <PwaInstallPrompt />
+            </ToastProvider>
           </AuthProvider>
         </ThemeProvider>
         <ServiceWorkerRegistrar />
