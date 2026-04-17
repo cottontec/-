@@ -10,6 +10,7 @@ import WritingAnswer from "@/app/components/WritingAnswer";
 import Timer from "@/app/components/Timer";
 import SpeakButton from "@/app/components/SpeakButton";
 import { useToast } from "@/app/components/Toast";
+import { tapLight, tapMedium, tapSuccess, tapError } from "@/app/lib/haptics";
 import { useAuth } from "@/app/lib/auth-context";
 import { getQuestions, SAMPLE_EXAMS } from "@/app/lib/data";
 import { saveResult, notifyTeachersOfSubmission } from "@/app/lib/storage";
@@ -66,6 +67,7 @@ export default function QuizPage() {
 
   const handleTextSelect = (questionId: string, label: string) => {
     if (startTimeRef.current === 0) startTimeRef.current = getTimestamp();
+    tapLight();
     setTextAnswers((prev) => ({ ...prev, [questionId]: label }));
   };
 
@@ -114,6 +116,7 @@ export default function QuizPage() {
 
   const handleMarkChange = (answers: Record<number, number>) => {
     if (startTimeRef.current === 0) startTimeRef.current = getTimestamp();
+    if (Object.keys(answers).length !== Object.keys(markAnswers).length) tapLight();
     setMarkAnswers(answers);
   };
 
@@ -138,6 +141,7 @@ export default function QuizPage() {
       }
       setMarkResults(results);
       setSubmitted(true);
+      tapMedium();
     } else {
       // 従来モード採点
       questions.forEach((q) => {
@@ -150,6 +154,8 @@ export default function QuizPage() {
     const percentage = totalPoints > 0
       ? Math.round((score / totalPoints) * 10000) / 100
       : 0;
+    // 合格ラインの目安を 60% として触覚でフィードバック
+    if (percentage >= 60) tapSuccess(); else tapError();
     const resultId = `${id}-${getTimestamp()}`;
 
     const userAnswers = isPdfMode

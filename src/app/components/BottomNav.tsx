@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/app/lib/auth-context";
+import { tapLight } from "@/app/lib/haptics";
 import { Home, History, BarChart3, RefreshCw, Bookmark } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -34,7 +35,8 @@ export default function BottomNav() {
             <li key={href} className="flex-1">
               <Link
                 href={href}
-                className={`flex h-14 flex-col items-center justify-center gap-0.5 text-[10px] transition ${
+                onClick={() => { if (!active) tapLight(); }}
+                className={`flex h-14 flex-col items-center justify-center gap-0.5 text-[10px] transition active:scale-95 ${
                   active
                     ? "text-blue-600 dark:text-blue-400"
                     : "text-[var(--muted)] hover:text-[var(--foreground)]"

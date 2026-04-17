@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Share2, Check } from "lucide-react";
 import { useToast } from "@/app/components/Toast";
+import { tapLight } from "@/app/lib/haptics";
 
 interface Props {
   title: string;
@@ -17,6 +18,7 @@ export default function ShareButton({ title, text, url, className = "", label = 
   const [copied, setCopied] = useState(false);
 
   const share = async () => {
+    tapLight();
     const shareUrl = url ?? (typeof window !== "undefined" ? window.location.href : "");
     if (typeof navigator !== "undefined" && "share" in navigator) {
       try {

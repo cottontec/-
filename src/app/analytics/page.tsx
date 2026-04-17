@@ -113,8 +113,8 @@ export default function AnalyticsPage() {
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <Header />
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        <h2 className="mb-6 text-2xl font-bold text-[var(--foreground)]">成績分析</h2>
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:py-8">
+        <h2 className="mb-4 text-xl sm:text-2xl font-bold text-[var(--foreground)] sm:mb-6">成績分析</h2>
 
         {results.length === 0 ? (
           <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] py-12 text-center">
@@ -125,28 +125,28 @@ export default function AnalyticsPage() {
         ) : (
           <div className="space-y-6">
             {/* 統計カード */}
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6 text-center">
-                <Target size={24} className="mx-auto mb-2 text-blue-600" />
-                <p className="text-3xl font-bold text-blue-600">{overallRate}%</p>
-                <p className="text-sm text-[var(--muted)]">全体正答率</p>
+            <div className="grid grid-cols-3 gap-2 sm:gap-4">
+              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 text-center sm:p-6">
+                <Target size={20} className="mx-auto mb-1 text-blue-600 sm:mb-2" />
+                <p className="text-xl sm:text-3xl font-bold text-blue-600">{overallRate}%</p>
+                <p className="text-[11px] sm:text-sm text-[var(--muted)]">全体正答率</p>
               </div>
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6 text-center">
-                <BarChartIcon size={24} className="mx-auto mb-2 text-green-600" />
-                <p className="text-3xl font-bold text-green-600">{results.length}</p>
-                <p className="text-sm text-[var(--muted)]">受験回数</p>
+              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 text-center sm:p-6">
+                <BarChartIcon size={20} className="mx-auto mb-1 text-green-600 sm:mb-2" />
+                <p className="text-xl sm:text-3xl font-bold text-green-600">{results.length}</p>
+                <p className="text-[11px] sm:text-sm text-[var(--muted)]">受験回数</p>
               </div>
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6 text-center">
-                <TrendingUp size={24} className="mx-auto mb-2 text-purple-600" />
-                <p className="text-3xl font-bold text-purple-600">{totalQ}</p>
-                <p className="text-sm text-[var(--muted)]">解答数</p>
+              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 text-center sm:p-6">
+                <TrendingUp size={20} className="mx-auto mb-1 text-purple-600 sm:mb-2" />
+                <p className="text-xl sm:text-3xl font-bold text-purple-600">{totalQ}</p>
+                <p className="text-[11px] sm:text-sm text-[var(--muted)]">解答数</p>
               </div>
             </div>
 
             {/* スコア推移（折れ線グラフ） */}
-            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6">
-              <h3 className="mb-4 text-lg font-semibold text-[var(--foreground)]">スコア推移</h3>
-              <div className="h-64">
+            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 sm:p-6">
+              <h3 className="mb-3 text-base font-semibold text-[var(--foreground)] sm:mb-4 sm:text-lg">スコア推移</h3>
+              <div className="h-52 sm:h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={lineData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -159,11 +159,11 @@ export default function AnalyticsPage() {
               </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
               {/* 級別平均（棒グラフ） */}
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6">
-                <h3 className="mb-4 text-lg font-semibold text-[var(--foreground)]">級別平均スコア</h3>
-                <div className="h-64">
+              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 sm:p-6">
+                <h3 className="mb-3 text-base font-semibold text-[var(--foreground)] sm:mb-4 sm:text-lg">級別平均スコア</h3>
+                <div className="h-52 sm:h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={barData}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -177,9 +177,9 @@ export default function AnalyticsPage() {
               </div>
 
               {/* 分野別レーダーチャート */}
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6">
-                <h3 className="mb-4 text-lg font-semibold text-[var(--foreground)]">分野別正答率</h3>
-                <div className="h-64">
+              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 sm:p-6">
+                <h3 className="mb-3 text-base font-semibold text-[var(--foreground)] sm:mb-4 sm:text-lg">分野別正答率</h3>
+                <div className="h-52 sm:h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <RadarChart data={radarData}>
                       <PolarGrid />
