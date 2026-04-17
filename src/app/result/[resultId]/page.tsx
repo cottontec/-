@@ -49,7 +49,17 @@ export default function ResultPage() {
   }
 
   if (!result) {
-    return <div className="min-h-screen bg-[var(--background)]"><Header /><div className="flex items-center justify-center py-32 text-[var(--muted)]">結果が見つかりませんでした</div></div>;
+    return (
+      <div className="min-h-screen bg-[var(--background)]">
+        <Header />
+        <div className="mx-auto max-w-md px-4 py-20 text-center">
+          <p className="text-[var(--muted)]">結果が見つかりませんでした</p>
+          <Link href="/history" className="mt-4 inline-block rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">
+            履歴を見る
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const exam = getExamById(result.examId);
@@ -82,14 +92,9 @@ export default function ResultPage() {
           <p className="mt-2 text-sm text-[var(--muted)]">所要時間: {formatTime(result.timeSpentSeconds)}</p>
           <div className="mt-6 flex flex-wrap justify-center gap-2 sm:gap-4">
             {exam && (
-              <>
-                <Link href={`/quiz/${exam.id}`} className="flex items-center gap-1 rounded-md border border-[var(--border)] px-4 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-2)]">
-                  <RotateCcw size={16} /> もう一度挑戦
-                </Link>
-                <Link href={`/exams/${exam.id}/explanation`} className="flex items-center gap-1 rounded-md border border-[var(--border)] px-4 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-2)]">
-                  解説を見る
-                </Link>
-              </>
+              <Link href={`/quiz/${exam.id}`} className="flex items-center gap-1 rounded-md border border-[var(--border)] px-4 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-2)]">
+                <RotateCcw size={16} /> もう一度挑戦
+              </Link>
             )}
             <Link href="/" className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">ホームに戻る</Link>
             <ShareButton

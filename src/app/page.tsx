@@ -104,7 +104,7 @@ function Dashboard({
         <KpiCard icon={Flame} accent="orange" label="連続学習" value={`${streak}日`} hint={streak >= 3 ? "🔥 絶好調" : "今日も続けよう"} />
         <KpiCard icon={Clock} accent="blue" label="今週の学習時間" value={formatStudyTime(weekSeconds)} hint={`${results.filter(r => Date.now() - new Date(r.completedAt).getTime() < 7*86400e3).length}回演習`} />
         <KpiCard icon={TrendingUp} accent="green" label="平均正答率" value={`${avgPct}%`} hint={results.length > 0 ? `通算 ${results.length}回` : "未受験"} />
-        <KpiCard icon={Target} accent="purple" label="目標級" value={targetGrade ? GRADE_INFO[targetGrade].label : "未設定"} href="/goals" hint="設定→" />
+        <KpiCard icon={Target} accent="purple" label="目標級" value={targetGrade ? GRADE_INFO[targetGrade].label : "未設定"} hint={targetGrade ? "" : "プロフィールで設定"} />
       </div>
 
       {/* 続きから + おすすめ */}
@@ -146,10 +146,7 @@ function Dashboard({
       {/* 学習カレンダー（ヒートマップ） */}
       {!loading && results.length > 0 && (
         <div className="mb-6 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-[var(--foreground)]">学習カレンダー（直近12週）</h3>
-            <Link href="/calendar" className="text-xs text-blue-600 hover:underline dark:text-blue-400">詳細 →</Link>
-          </div>
+          <h3 className="mb-3 text-sm font-semibold text-[var(--foreground)]">学習カレンダー（直近12週）</h3>
           <Heatmap data={heatmap} />
         </div>
       )}

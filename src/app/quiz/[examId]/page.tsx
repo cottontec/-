@@ -221,8 +221,14 @@ export default function QuizPage() {
     return (
       <div className="min-h-screen bg-[var(--background)]">
         <Header />
-        <div className="flex items-center justify-center py-32 text-[var(--muted)]">
-          試験が見つかりませんでした
+        <div className="mx-auto max-w-md px-4 py-20 text-center">
+          <p className="text-[var(--muted)]">試験が見つかりませんでした</p>
+          <button
+            onClick={() => router.push("/")}
+            className="mt-4 rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+          >
+            ホームに戻る
+          </button>
         </div>
       </div>
     );
@@ -350,8 +356,14 @@ export default function QuizPage() {
     return (
       <div className="min-h-screen bg-[var(--background)]">
         <Header />
-        <div className="flex items-center justify-center py-32 text-[var(--muted)]">
-          問題が見つかりませんでした
+        <div className="mx-auto max-w-md px-4 py-20 text-center">
+          <p className="text-[var(--muted)]">この試験にはまだ問題が登録されていません</p>
+          <button
+            onClick={() => router.push(`/grade/${exam.grade}`)}
+            className="mt-4 rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+          >
+            他の試験を選ぶ
+          </button>
         </div>
       </div>
     );

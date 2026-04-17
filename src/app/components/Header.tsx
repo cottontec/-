@@ -1,49 +1,29 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/app/lib/auth-context";
 import { useTheme } from "@/app/lib/theme-context";
-import { getUnreadCount } from "@/app/lib/storage";
 import {
-  LogOut, Bell, GraduationCap, ChevronDown,
-  Bookmark, ScanLine, Target, Calendar, RefreshCw, History, BarChart3,
+  LogOut, GraduationCap,
+  RefreshCw, History, BarChart3, Bookmark,
   Sun, Moon, Monitor,
 } from "lucide-react";
 
 export default function Header() {
   const { user, signOut } = useAuth();
   const { theme, setTheme, resolvedTheme } = useTheme();
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [moreOpen, setMoreOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
-  const moreRef = useRef<HTMLDivElement>(null);
   const themeRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!user) return;
-    const check = async () => setUnreadCount(await getUnreadCount(user.id));
-    check();
-    const interval = setInterval(check, 30000);
-    return () => clearInterval(interval);
-  }, [user]);
 
   // 外クリックで閉じる
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false);
       if (themeRef.current && !themeRef.current.contains(e.target as Node)) setThemeOpen(false);
     };
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
-
-  const moreItems = [
-    { href: "/scan", label: "紙採点", icon: ScanLine },
-    { href: "/goals", label: "目標", icon: Target },
-    { href: "/calendar", label: "学習日記", icon: Calendar },
-    { href: "/bookmarks", label: "保存問題", icon: Bookmark },
-  ];
 
   const ThemeIcon = resolvedTheme === "dark" ? Moon : Sun;
 
@@ -58,7 +38,7 @@ export default function Header() {
         <nav className="flex items-center gap-1 sm:gap-2">
           {user && (
             <>
-              {/* PC: 主要リンク3つだけ表に出す */}
+              {/* PC: 主要リンクだけ（モバイルはBottomNavに任せる） */}
               <Link href="/history" className="hidden md:flex items-center gap-1 rounded-md px-2 py-1.5 text-sm text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]">
                 <History size={16} /> 履歴
               </Link>
@@ -68,46 +48,8 @@ export default function Header() {
               <Link href="/drill" className="hidden md:flex items-center gap-1 rounded-md px-2 py-1.5 text-sm text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]">
                 <RefreshCw size={16} /> 弱点
               </Link>
-
-              {/* More メニュー */}
-              <div className="relative hidden md:block" ref={moreRef}>
-                <button
-                  onClick={() => setMoreOpen((v) => !v)}
-                  className="flex items-center gap-1 rounded-md px-2 py-1.5 text-sm text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]"
-                  aria-haspopup="menu"
-                  aria-expanded={moreOpen}
-                >
-                  More <ChevronDown size={14} />
-                </button>
-                {moreOpen && (
-                  <div className="fade-up absolute right-0 mt-1 w-48 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-lg">
-                    {moreItems.map(({ href, label, icon: Icon }) => (
-                      <Link
-                        key={href}
-                        href={href}
-                        onClick={() => setMoreOpen(false)}
-                        className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-2)]"
-                      >
-                        <Icon size={15} className="text-[var(--muted)]" />
-                        {label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* 通知 */}
-              <Link
-                href="/notifications"
-                className="relative flex items-center rounded-md p-2 text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]"
-                aria-label="通知"
-              >
-                <Bell size={18} />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
+              <Link href="/bookmarks" className="hidden md:flex items-center gap-1 rounded-md px-2 py-1.5 text-sm text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]">
+                <Bookmark size={16} /> 保存
               </Link>
             </>
           )}
