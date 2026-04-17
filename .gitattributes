@@ -1,1 +1,2 @@
 *.mp3 filter=lfs diff=lfs merge=lfs -text
+英検_準1級全問題集.pdf filter=lfs diff=lfs merge=lfs -text
