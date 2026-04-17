@@ -6,9 +6,10 @@ import Header from "@/app/components/Header";
 import { useAuth } from "@/app/lib/auth-context";
 import { getResults } from "@/app/lib/storage";
 import { getExamById } from "@/app/lib/data";
-import { GRADE_INFO, SECTION_LABELS } from "@/app/lib/types";
+import { GRADE_INFO } from "@/app/lib/types";
 import type { QuizResult, Grade } from "@/app/lib/types";
 import { Trophy, Calendar } from "lucide-react";
+import ModeBadge from "@/app/components/ModeBadge";
 
 export default function HistoryPage() {
   const { user } = useAuth();
@@ -38,20 +39,28 @@ export default function HistoryPage() {
               const gradeLabel = exam ? GRADE_INFO[exam.grade as Grade]?.label ?? exam.grade : "不明";
               return (
                 <Link key={result.id} href={`/result/${result.id}`} className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-4 transition hover:shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <Trophy size={20} className="text-yellow-500" />
-                    <div>
-                      <p className="font-medium text-[var(--foreground)]">{exam ? `${gradeLabel} ${exam.year}年 第${exam.session}回` : "不明な試験"}</p>
-                      <p className="text-sm text-[var(--muted)]">{exam ? (SECTION_LABELS[exam.section] ?? exam.section) : ""}</p>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Trophy size={20} className="shrink-0 text-yellow-500" />
+                    <div className="min-w-0">
+                      <p className="flex flex-wrap items-center gap-2 font-medium text-[var(--foreground)]">
+                        {exam ? `${gradeLabel} ${exam.year}年 第${exam.session}回` : "不明な試験"}
+                        <ModeBadge mode={result.mode ?? "full"} size="sm" />
+                      </p>
                       <p className="flex items-center gap-1 text-xs text-[var(--muted)]">
                         <Calendar size={12} />
                         {new Date(result.completedAt).toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-blue-600">{result.percentage}%</p>
-                    <p className="text-sm text-[var(--muted)]">{result.score}/{result.totalPoints}</p>
+                  <div className="text-right shrink-0">
+                    {result.mode === "writing" ? (
+                      <p className="text-sm font-medium text-amber-600 dark:text-amber-400">作文提出</p>
+                    ) : (
+                      <>
+                        <p className="text-2xl font-bold text-blue-600">{result.percentage}%</p>
+                        <p className="text-sm text-[var(--muted)]">{result.score}/{result.totalPoints}</p>
+                      </>
+                    )}
                   </div>
                 </Link>
               );

@@ -7,10 +7,11 @@ import Header from "@/app/components/Header";
 import { getResultById, addBookmark, removeBookmark, getBookmarks, type Bookmark } from "@/app/lib/storage";
 import { useAuth } from "@/app/lib/auth-context";
 import { getExamById, getQuestions } from "@/app/lib/data";
-import { GRADE_INFO, SECTION_LABELS } from "@/app/lib/types";
+import { GRADE_INFO } from "@/app/lib/types";
 import type { QuizResult, Question, Grade } from "@/app/lib/types";
 import { ArrowLeft, CheckCircle, XCircle, RotateCcw, BookmarkPlus, BookmarkCheck } from "lucide-react";
 import ShareButton from "@/app/components/ShareButton";
+import ModeBadge from "@/app/components/ModeBadge";
 
 export default function ResultPage() {
   const { resultId } = useParams();
@@ -81,14 +82,26 @@ export default function ResultPage() {
 
         {/* スコア */}
         <div className="mb-8 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-8 text-center shadow-sm">
-          <h2 className="mb-2 text-lg text-[var(--muted)]">
-            {gradeLabel} {exam ? `${exam.year}年 第${exam.session}回` : ""} - {exam ? (SECTION_LABELS[exam.section] ?? exam.section) : ""}
-          </h2>
-          <div className="mb-4">
-            <span className="text-6xl font-bold text-blue-600">{result.percentage}</span>
-            <span className="text-2xl text-[var(--muted)]">%</span>
+          <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
+            <h2 className="text-lg text-[var(--muted)]">
+              {gradeLabel} {exam ? `${exam.year}年 第${exam.session}回` : ""}
+            </h2>
+            <ModeBadge mode={result.mode ?? "full"} />
           </div>
-          <p className="text-lg text-[var(--foreground)]">{result.score} / {result.totalPoints} 問正解</p>
+          {result.mode === "writing" ? (
+            <div className="mb-4">
+              <p className="text-2xl font-bold text-[var(--foreground)]">ライティング提出済み</p>
+              <p className="mt-2 text-sm text-[var(--muted)]">自動採点はありません。模範解答と比較しましょう。</p>
+            </div>
+          ) : (
+            <>
+              <div className="mb-4">
+                <span className="text-6xl font-bold text-blue-600">{result.percentage}</span>
+                <span className="text-2xl text-[var(--muted)]">%</span>
+              </div>
+              <p className="text-lg text-[var(--foreground)]">{result.score} / {result.totalPoints} 問正解</p>
+            </>
+          )}
           <p className="mt-2 text-sm text-[var(--muted)]">所要時間: {formatTime(result.timeSpentSeconds)}</p>
           <div className="mt-6 flex flex-wrap justify-center gap-2 sm:gap-4">
             {exam && (

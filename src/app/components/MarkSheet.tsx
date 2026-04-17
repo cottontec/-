@@ -14,6 +14,10 @@ interface MarkSheetProps {
   examSections?: ExamSection[];
   onLapTimesChange?: (lapTimes: LapTime[]) => void;
   lapTimes?: LapTime[];
+  /** 開始問題番号（デフォルト1）。セクション別モードで使用。 */
+  startQ?: number;
+  /** 終了問題番号（デフォルトは questionCount）。セクション別モードで使用。 */
+  endQ?: number;
 }
 
 export default function MarkSheet({
@@ -27,7 +31,11 @@ export default function MarkSheet({
   examSections,
   onLapTimesChange,
   lapTimes: displayLapTimes,
+  startQ = 1,
+  endQ,
 }: MarkSheetProps) {
+  const effectiveEndQ = endQ ?? questionCount;
+  const rangeCount = effectiveEndQ - startQ + 1;
   const [answers, setAnswers] = useState<Record<number, number>>(initialAnswers);
   const startTimeRef = useRef(0);
   const lapTimesRef = useRef<LapTime[]>([]);
@@ -63,7 +71,6 @@ export default function MarkSheet({
     }
   };
 
-  const answeredCount = Object.keys(answers).length;
   const formatMs = (ms: number) => {
     const s = Math.floor(ms / 1000);
     return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
@@ -72,8 +79,18 @@ export default function MarkSheet({
   const sectionEndQs = new Set(examSections?.map((s) => s.endQ) ?? []);
   const sectionStartMap = new Map(examSections?.map((s) => [s.startQ, s.name]) ?? []);
 
-  const correctCount = results ? Object.values(results).filter(Boolean).length : 0;
-  const percentage = results ? Math.round((correctCount / questionCount) * 100) : 0;
+  // 範囲内の解答数・正解数だけをカウント
+  const inRangeAnswered = Object.keys(answers).filter((k) => {
+    const n = Number(k);
+    return n >= startQ && n <= effectiveEndQ;
+  }).length;
+  const inRangeCorrect = results
+    ? Object.entries(results).filter(([k, v]) => {
+        const n = Number(k);
+        return v && n >= startQ && n <= effectiveEndQ;
+      }).length
+    : 0;
+  const percentage = results ? Math.round((inRangeCorrect / rangeCount) * 100) : 0;
 
   return (
     <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-[var(--surface)] shadow-sm">
@@ -85,7 +102,7 @@ export default function MarkSheet({
         </div>
         <div className="flex items-center gap-2">
           <div className="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1">
-            <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{answeredCount}<span className="text-slate-400 dark:text-slate-500">/{questionCount}</span></span>
+            <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{inRangeAnswered}<span className="text-slate-400 dark:text-slate-500">/{rangeCount}</span></span>
           </div>
           {results && (
             <div className={`rounded-full px-3 py-1 ${percentage >= 70 ? "bg-emerald-100 dark:bg-emerald-900/40" : percentage >= 50 ? "bg-amber-100 dark:bg-amber-900/40" : "bg-red-100 dark:bg-red-900/40"}`}>
@@ -106,8 +123,8 @@ export default function MarkSheet({
           {results && <div className="ml-1 w-6" />}
         </div>
 
-        {Array.from({ length: questionCount }, (_, qIdx) => {
-          const qNum = qIdx + 1;
+        {Array.from({ length: rangeCount }, (_, qIdx) => {
+          const qNum = startQ + qIdx;
           const selected = answers[qNum];
           const isCorrect = results?.[qNum];
           const correctAnswer = answerKey?.[qNum];
@@ -175,7 +192,7 @@ export default function MarkSheet({
       {results && (
         <div className="border-t border-slate-100 dark:border-slate-800 px-4 py-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500 dark:text-slate-400">正解 {correctCount}/{questionCount}</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">正解 {inRangeCorrect}/{rangeCount}</span>
             <span className={`text-lg font-bold ${percentage >= 70 ? "text-emerald-600 dark:text-emerald-400" : percentage >= 50 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"}`}>{percentage}%</span>
           </div>
         </div>

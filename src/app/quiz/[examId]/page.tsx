@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Header from "@/app/components/Header";
 import AudioPlayer from "@/app/components/AudioPlayer";
 import PdfViewer from "@/app/components/PdfViewer";
@@ -9,13 +9,14 @@ import MarkSheet from "@/app/components/MarkSheet";
 import WritingAnswer from "@/app/components/WritingAnswer";
 import Timer from "@/app/components/Timer";
 import SpeakButton from "@/app/components/SpeakButton";
+import ModeBadge from "@/app/components/ModeBadge";
 import { useToast } from "@/app/components/Toast";
 import { tapLight, tapMedium, tapSuccess, tapError } from "@/app/lib/haptics";
 import { useAuth } from "@/app/lib/auth-context";
-import { getQuestions, SAMPLE_EXAMS } from "@/app/lib/data";
+import { getQuestions, getModeRange, isModeAvailable, SAMPLE_EXAMS } from "@/app/lib/data";
 import { saveResult, notifyTeachersOfSubmission } from "@/app/lib/storage";
-import type { Question, LapTime } from "@/app/lib/types";
-import { GRADE_SECTIONS } from "@/app/lib/types";
+import type { Question, LapTime, QuizMode } from "@/app/lib/types";
+import { GRADE_SECTIONS, QUIZ_MODES } from "@/app/lib/types";
 import { ArrowLeft, ArrowRight, Check, Clock, Send } from "lucide-react";
 
 export default function QuizPage() {
@@ -23,10 +24,18 @@ export default function QuizPage() {
   const router = useRouter();
   const { user } = useAuth();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
   const id = examId as string;
 
   const exam = SAMPLE_EXAMS.find((e) => e.id === id);
   const isPdfMode = !!exam?.pdfUrl || !!exam?.answerKey;
+
+  // ===== モード（通し / R / L / W） =====
+  const rawMode = (searchParams?.get("mode") ?? "full") as QuizMode;
+  const quizMode: QuizMode = QUIZ_MODES.includes(rawMode) ? rawMode : "full";
+  // 未対応のモードが指定された場合は通しに戻す
+  const resolvedMode: QuizMode = (exam && isModeAvailable(exam, quizMode)) ? quizMode : "full";
+  const modeRange = exam ? getModeRange(exam, resolvedMode) : null;
 
   // 従来モード用
   const questions: Question[] = useMemo(() => getQuestions(id), [id]);
@@ -61,8 +70,14 @@ export default function QuizPage() {
 
   const currentQuestion = questions[currentIndex];
   const totalQuestions = isPdfMode ? (exam?.questionCount ?? 0) : questions.length;
+  // モード範囲内の解答数だけ数える（PDFモード時）
   const answeredCount = isPdfMode
-    ? Object.keys(markAnswers).length
+    ? (modeRange
+        ? Object.keys(markAnswers).filter((k) => {
+            const n = Number(k);
+            return n >= modeRange.startQ && n <= modeRange.endQ;
+          }).length
+        : 0)
     : Object.keys(textAnswers).length;
 
   const handleTextSelect = (questionId: string, label: string) => {
@@ -128,17 +143,44 @@ export default function QuizPage() {
       ? Math.round((getTimestamp() - startTimeRef.current) / 1000)
       : 0;
 
+    // ===== ライティング単独モードの保存 =====
+    if (resolvedMode === "writing") {
+      const resultIdW = `${id}-${getTimestamp()}`;
+      await saveResult({
+        id: resultIdW,
+        examId: id,
+        userId: user.id,
+        answers: [{ questionId: `${id}-writing`, selectedAnswer: writingAnswer.text, isCorrect: false }],
+        score: 0,
+        totalPoints: 0,
+        percentage: 0,
+        timeSpentSeconds: totalTimeSeconds,
+        completedAt: new Date().toISOString(),
+        mode: "writing",
+      });
+      setSubmitted(true);
+      tapMedium();
+      toast("ライティングを保存しました。模範解答を確認してください", "success");
+      setSubmitting(false);
+      return;
+    }
+
     let score = 0;
     let totalPoints = totalQuestions;
+    const rangeStart = modeRange?.startQ ?? 1;
+    const rangeEnd = modeRange?.endQ ?? totalQuestions;
 
     if (isPdfMode && exam.answerKey) {
-      // マークシート採点
+      // マークシート採点（モード範囲のみ）
       const results: Record<number, boolean> = {};
-      for (let i = 1; i <= totalQuestions; i++) {
+      let rangeCorrect = 0;
+      for (let i = rangeStart; i <= rangeEnd; i++) {
         const isCorrect = markAnswers[i] === exam.answerKey[i];
         results[i] = isCorrect;
-        if (isCorrect) score++;
+        if (isCorrect) rangeCorrect++;
       }
+      score = rangeCorrect;
+      totalPoints = rangeEnd - rangeStart + 1;
       setMarkResults(results);
       setSubmitted(true);
       tapMedium();
@@ -159,34 +201,41 @@ export default function QuizPage() {
     const resultId = `${id}-${getTimestamp()}`;
 
     const userAnswers = isPdfMode
-      ? Array.from({ length: totalQuestions }, (_, i) => ({
-          questionId: `${id}-q${i + 1}`,
-          selectedAnswer: markAnswers[i + 1] ? String(markAnswers[i + 1]) : null,
-          isCorrect: exam?.answerKey ? markAnswers[i + 1] === exam.answerKey[i + 1] : false,
-        }))
+      ? Array.from({ length: rangeEnd - rangeStart + 1 }, (_, i) => {
+          const qNum = rangeStart + i;
+          return {
+            questionId: `${id}-q${qNum}`,
+            selectedAnswer: markAnswers[qNum] ? String(markAnswers[qNum]) : null,
+            isCorrect: exam?.answerKey ? markAnswers[qNum] === exam.answerKey[qNum] : false,
+          };
+        })
       : questions.map((q) => ({
           questionId: q.id,
           selectedAnswer: textAnswers[q.id] ?? null,
           isCorrect: (textAnswers[q.id] ?? null) === q.correctAnswer,
         }));
 
-    // 大問ごとの正答率を計算
-    const sectionScores = examSections?.map((sec) => {
-      let secScore = 0;
-      let secTotal = 0;
-      for (let i = sec.startQ; i <= sec.endQ; i++) {
-        secTotal++;
-        if (isPdfMode && exam?.answerKey) {
-          if (markAnswers[i] === exam.answerKey[i]) secScore++;
+    // 大問ごとの正答率（モード範囲に重なる大問のみ）
+    const sectionScores = examSections
+      ?.filter((sec) => sec.endQ >= rangeStart && sec.startQ <= rangeEnd)
+      .map((sec) => {
+        const from = Math.max(sec.startQ, rangeStart);
+        const to = Math.min(sec.endQ, rangeEnd);
+        let secScore = 0;
+        let secTotal = 0;
+        for (let i = from; i <= to; i++) {
+          secTotal++;
+          if (isPdfMode && exam?.answerKey) {
+            if (markAnswers[i] === exam.answerKey[i]) secScore++;
+          }
         }
-      }
-      return {
-        name: sec.name,
-        score: secScore,
-        total: secTotal,
-        percentage: secTotal > 0 ? Math.round((secScore / secTotal) * 100) : 0,
-      };
-    });
+        return {
+          name: sec.name,
+          score: secScore,
+          total: secTotal,
+          percentage: secTotal > 0 ? Math.round((secScore / secTotal) * 100) : 0,
+        };
+      });
 
     await saveResult({
       id: resultId,
@@ -198,6 +247,7 @@ export default function QuizPage() {
       percentage,
       timeSpentSeconds: totalTimeSeconds,
       completedAt: new Date().toISOString(),
+      mode: resolvedMode,
       lapTimes: lapTimes.length > 0 ? lapTimes : undefined,
       sectionScores,
     });
@@ -241,8 +291,11 @@ export default function QuizPage() {
         <Header />
         <main className="mx-auto max-w-[1600px] px-3 py-4">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-base sm:text-lg font-bold text-[var(--foreground)]">{exam.title}</h2>
-            {exam.timeLimitMinutes && (
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-base sm:text-lg font-bold text-[var(--foreground)]">{exam.title}</h2>
+              <ModeBadge mode={resolvedMode} />
+            </div>
+            {exam.timeLimitMinutes && resolvedMode !== "writing" && (
               <Timer
                 limitMinutes={exam.timeLimitMinutes}
                 active={!submitted && answeredCount > 0}
@@ -274,26 +327,36 @@ export default function QuizPage() {
 
             {/* 右: マークシート + ライティング */}
             <div className="space-y-4">
-              {exam.listeningStartQ && (
+              {resolvedMode !== "writing" && exam.listeningStartQ && (
                 <p className="text-xs text-[var(--muted)]">
                   問1〜{exam.listeningStartQ - 1}: 筆記 / 問{exam.listeningStartQ}〜{exam.questionCount}: リスニング
+                  {resolvedMode !== "full" && modeRange && (
+                    <span className="ml-2 rounded bg-blue-100 px-1.5 py-0.5 text-[10px] text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                      採点範囲: 問{modeRange.startQ}〜{modeRange.endQ}
+                    </span>
+                  )}
                 </p>
               )}
 
-              <MarkSheet
-                questionCount={exam.questionCount}
-                choiceCount={exam.choiceCount ?? 4}
-                onAnswersChange={handleMarkChange}
-                results={markResults}
-                answerKey={submitted ? exam.answerKey : undefined}
-                readOnly={submitted}
-                initialAnswers={markAnswers}
-                examSections={examSections}
-                onLapTimesChange={setLapTimes}
-                lapTimes={submitted ? lapTimes : undefined}
-              />
+              {resolvedMode !== "writing" && modeRange && (
+                <MarkSheet
+                  questionCount={exam.questionCount}
+                  choiceCount={exam.choiceCount ?? 4}
+                  onAnswersChange={handleMarkChange}
+                  results={markResults}
+                  answerKey={submitted ? exam.answerKey : undefined}
+                  readOnly={submitted}
+                  initialAnswers={markAnswers}
+                  examSections={examSections}
+                  onLapTimesChange={setLapTimes}
+                  lapTimes={submitted ? lapTimes : undefined}
+                  startQ={modeRange.startQ}
+                  endQ={modeRange.endQ}
+                />
+              )}
 
-              {exam.hasWriting && (
+              {/* ライティング入力: 通しモードではライティングある試験だけ / ライティング単独モードでは常に表示 */}
+              {(resolvedMode === "writing" || (resolvedMode === "full" && exam.hasWriting)) && (
                 <WritingAnswer
                   onAnswerChange={setWritingAnswer}
                   readOnly={submitted}
@@ -302,14 +365,28 @@ export default function QuizPage() {
                 />
               )}
 
+              {resolvedMode === "writing" && exam.writingTopic && (
+                <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-950/40">
+                  <h4 className="mb-2 text-sm font-bold text-amber-800 dark:text-amber-200">ライティング課題</h4>
+                  <p className="text-sm text-[var(--foreground)] whitespace-pre-wrap">{exam.writingTopic}</p>
+                </div>
+              )}
+
               {!submitted ? (
                 <button
                   onClick={handleSubmit}
-                  disabled={submitting || answeredCount === 0}
+                  disabled={
+                    submitting ||
+                    (resolvedMode === "writing"
+                      ? writingAnswer.text.trim().length === 0
+                      : answeredCount === 0)
+                  }
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-lg font-bold text-white hover:bg-green-700 disabled:opacity-50"
                 >
                   <Send size={20} />
-                  {submitting ? "採点中..." : "採点する"}
+                  {submitting
+                    ? (resolvedMode === "writing" ? "保存中..." : "採点中...")
+                    : (resolvedMode === "writing" ? "提出する" : "採点する")}
                 </button>
               ) : (
                 <div className="space-y-2">
@@ -497,3 +574,4 @@ export default function QuizPage() {
     </div>
   );
 }
+

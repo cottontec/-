@@ -43,9 +43,12 @@ export default function AnalyticsPage() {
     return <div className="min-h-screen bg-[var(--background)]"><Header /><div className="flex items-center justify-center py-32 text-[var(--muted)]">読み込み中...</div></div>;
   }
 
+  // ライティングモードはスコアが無いので統計から除外
+  const scoredResults = results.filter((r) => (r.mode ?? "full") !== "writing" && r.totalPoints > 0);
+
   // 級別の平均スコア
   const gradeStats = new Map<string, { total: number; count: number }>();
-  results.forEach((r) => {
+  scoredResults.forEach((r) => {
     const exam = getExamById(r.examId);
     if (!exam) return;
     const key = exam.grade;
@@ -56,7 +59,7 @@ export default function AnalyticsPage() {
   });
 
   // 折れ線グラフ用データ（直近20件）
-  const lineData = results.slice(0, 20).reverse().map((r, i) => {
+  const lineData = scoredResults.slice(0, 20).reverse().map((r, i) => {
     const exam = getExamById(r.examId);
     return {
       name: `#${i + 1}`,
@@ -72,12 +75,12 @@ export default function AnalyticsPage() {
     count: stats.count,
   }));
 
-  // レーダーチャート用データ（セクション別 — 簡易版）
+  // レーダーチャート用データ（モード別に集計）
   const sectionStats = new Map<string, { correct: number; total: number }>();
-  results.forEach((r) => {
-    const exam = getExamById(r.examId);
-    if (!exam) return;
-    const section = exam.section;
+  scoredResults.forEach((r) => {
+    const mode = r.mode ?? "full";
+    // 通しは reading 相当として扱う（大半の問題がreading）
+    const section = mode === "listening" ? "listening" : mode === "reading" ? "reading" : "reading";
     const cur = sectionStats.get(section) ?? { correct: 0, total: 0 };
     r.answers.forEach((a) => {
       cur.total += 1;
@@ -93,8 +96,8 @@ export default function AnalyticsPage() {
     { subject: "リスニング", value: 0 },
   ];
   // 全体の正答率をベースにシミュレート
-  const totalCorrect = results.reduce((sum, r) => sum + r.score, 0);
-  const totalQ = results.reduce((sum, r) => sum + r.totalPoints, 0);
+  const totalCorrect = scoredResults.reduce((sum, r) => sum + r.score, 0);
+  const totalQ = scoredResults.reduce((sum, r) => sum + r.totalPoints, 0);
   const overallRate = totalQ > 0 ? Math.round((totalCorrect / totalQ) * 100) : 0;
 
   if (totalQ > 0) {

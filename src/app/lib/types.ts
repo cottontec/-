@@ -4,6 +4,15 @@ export type Grade = "5kyu" | "4kyu" | "3kyu" | "pre2kyu" | "2kyu" | "pre1kyu" | 
 export type Section = "reading" | "listening" | "writing";
 export type QuestionType = "vocabulary" | "grammar" | "reading_comprehension" | "listening" | "writing";
 export type UserRole = "student" | "teacher";
+/** クイズ受験モード: 通し or セクション別 */
+export type QuizMode = "full" | "reading" | "listening" | "writing";
+export const QUIZ_MODES: QuizMode[] = ["full", "reading", "listening", "writing"];
+export const QUIZ_MODE_LABELS: Record<QuizMode, string> = {
+  full: "通し",
+  reading: "リーディング",
+  listening: "リスニング",
+  writing: "ライティング",
+};
 
 /** 大問の区切り定義（英検公式準拠） */
 export interface ExamSection {
@@ -79,6 +88,8 @@ export interface QuizResult {
   percentage: number;
   timeSpentSeconds: number;
   completedAt: string;
+  /** 受験モード（未指定は"full"扱い） */
+  mode?: QuizMode;
   /** 大問ごとのラップタイム */
   lapTimes?: LapTime[];
   /** 大問ごとの正答率 */

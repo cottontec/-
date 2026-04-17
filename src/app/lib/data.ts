@@ -1,4 +1,4 @@
-import type { Grade, Exam, Question } from "./types";
+import type { Grade, Exam, Question, QuizMode } from "./types";
 
 // === 公式PDF+マークシート形式の過去問 ===
 // PDFは英検公式サイト: https://www.eiken.or.jp/eiken/exam/
@@ -331,4 +331,36 @@ export function getQuestions(examId: string): Question[] {
 
 export function getExamById(examId: string): Exam | undefined {
   return SAMPLE_EXAMS.find((e) => e.id === examId);
+}
+
+/**
+ * 指定モードでマークシートの問題番号範囲を返す。
+ * - full: 全問（1 〜 questionCount）
+ * - reading: 1 〜 (listeningStartQ - 1)
+ * - listening: listeningStartQ 〜 questionCount
+ * - writing: null（マークシート外）
+ *
+ * listeningStartQ が未設定の試験では reading は全問、listening は null。
+ */
+export function getModeRange(exam: Exam, mode: QuizMode): { startQ: number; endQ: number } | null {
+  if (mode === "writing") return null;
+  if (mode === "full") return { startQ: 1, endQ: exam.questionCount };
+  if (mode === "reading") {
+    const end = exam.listeningStartQ ? exam.listeningStartQ - 1 : exam.questionCount;
+    return { startQ: 1, endQ: end };
+  }
+  if (mode === "listening") {
+    if (!exam.listeningStartQ) return null;
+    return { startQ: exam.listeningStartQ, endQ: exam.questionCount };
+  }
+  return null;
+}
+
+/** 指定モードが試験で利用可能か */
+export function isModeAvailable(exam: Exam, mode: QuizMode): boolean {
+  if (mode === "full") return true;
+  if (mode === "writing") return !!exam.hasWriting;
+  if (mode === "reading") return true; // リスニング境界なしでも全問Reading扱いで可
+  if (mode === "listening") return !!exam.listeningStartQ;
+  return false;
 }
