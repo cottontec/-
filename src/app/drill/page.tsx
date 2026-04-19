@@ -123,9 +123,9 @@ export default function DrillPage() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-lg border border-[var(--border)] bg-green-50 py-8 text-center">
-                  <p className="text-green-700 font-medium">弱点は見つかりませんでした！</p>
-                  <p className="text-sm text-green-600">すべての分野で70%以上です。素晴らしい！</p>
+                <div className="rounded-lg border border-[var(--border)] bg-green-50 dark:bg-green-950/30 py-8 text-center">
+                  <p className="text-green-700 dark:text-green-300 font-medium">弱点は見つかりませんでした！</p>
+                  <p className="text-sm text-green-600 dark:text-green-400">すべての分野で70%以上です。素晴らしい！</p>
                 </div>
               )}
             </section>

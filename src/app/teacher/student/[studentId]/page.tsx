@@ -95,7 +95,7 @@ export default function StudentDetailPage() {
                     <button
                       key={r.id}
                       onClick={() => setSelectedResult(isSelected ? null : r)}
-                      className={`w-full rounded-lg border p-3 text-left transition ${isSelected ? "border-blue-500 bg-blue-50" : "bg-[var(--surface)] hover:bg-[var(--background)]"}`}
+                      className={`w-full rounded-lg border p-3 text-left transition ${isSelected ? "border-blue-500 bg-blue-50 dark:bg-blue-950/40" : "bg-[var(--surface)] hover:bg-[var(--background)]"}`}
                     >
                       <div className="flex items-center justify-between">
                         <div>
@@ -159,8 +159,8 @@ export default function StudentDetailPage() {
 
             {/* 自動アドバイスプレビュー */}
             {selectedResult && (
-              <div className="mb-4 rounded-lg border border-[var(--border)] bg-amber-50 p-3">
-                <p className="mb-1 flex items-center gap-1 text-xs font-bold text-amber-800"><Bot size={12} /> 自動アドバイス</p>
+              <div className="mb-4 rounded-lg border border-[var(--border)] bg-amber-50 dark:bg-amber-950/40 p-3">
+                <p className="mb-1 flex items-center gap-1 text-xs font-bold text-amber-800 dark:text-amber-300"><Bot size={12} /> 自動アドバイス</p>
                 <p className="whitespace-pre-wrap text-xs text-[var(--foreground)]">
                   {generateAutoAdvice(selectedResult, (getExamById(selectedResult.examId)?.grade ?? "3kyu") as Grade)}
                 </p>
@@ -191,12 +191,12 @@ export default function StudentDetailPage() {
               {notes.map((note) => (
                 <div key={note.id} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
                   <p className="text-xs text-[var(--muted)]">{new Date(note.createdAt).toLocaleDateString("ja-JP", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
-                  <div className="mt-1 rounded bg-amber-50 p-2 text-xs text-[var(--foreground)]">
-                    <p className="font-bold text-amber-800 mb-1">自動アドバイス:</p>
+                  <div className="mt-1 rounded bg-amber-50 dark:bg-amber-950/40 p-2 text-xs text-[var(--foreground)]">
+                    <p className="font-bold text-amber-800 dark:text-amber-300 mb-1">自動アドバイス:</p>
                     <p className="whitespace-pre-wrap">{note.autoAdvice}</p>
                   </div>
-                  <div className="mt-2 rounded bg-blue-50 p-2 text-xs text-[var(--foreground)]">
-                    <p className="font-bold text-blue-800 mb-1">先生のコメント:</p>
+                  <div className="mt-2 rounded bg-blue-50 dark:bg-blue-950/40 p-2 text-xs text-[var(--foreground)]">
+                    <p className="font-bold text-blue-800 dark:text-blue-300 mb-1">先生のコメント:</p>
                     <p className="whitespace-pre-wrap">{note.teacherComment}</p>
                   </div>
                 </div>

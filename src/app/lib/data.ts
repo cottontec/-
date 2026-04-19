@@ -12,16 +12,6 @@ const EIKEN_PDF_BASE = "https://www.eiken.or.jp/eiken/exam/kakomon";
 const pdf = (year: number, session: number, grade: string) =>
   `${EIKEN_PDF_BASE}/${year}-${session}-1ji-${grade}.pdf`;
 
-// リスニング音声（各級の過去問ページからリンクされている）
-const LISTENING_PAGE: Record<string, string> = {
-  "5kyu": "https://www.eiken.or.jp/eiken/exam/grade_5/",
-  "4kyu": "https://www.eiken.or.jp/eiken/exam/grade_4/",
-  "3kyu": "https://www.eiken.or.jp/eiken/exam/grade_3/",
-  "p2kyu": "https://www.eiken.or.jp/eiken/exam/grade_p2/",
-  "2kyu": "https://www.eiken.or.jp/eiken/exam/grade_2/",
-  "p1kyu": "https://www.eiken.or.jp/eiken/exam/grade_p1/",
-  "1kyu": "https://www.eiken.or.jp/eiken/exam/grade_1/",
-};
 
 export const SAMPLE_EXAMS: Exam[] = [
   // ========== 5級 ==========

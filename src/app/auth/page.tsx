@@ -66,7 +66,7 @@ export default function AuthPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5 rounded-lg bg-[var(--surface)] p-8 shadow">
-          {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+          {error && <div className="rounded-md bg-red-50 dark:bg-red-950/40 p-3 text-sm text-red-700 dark:text-red-300">{error}</div>}
 
           {mode === "signup" && (
             <div>

@@ -135,15 +135,15 @@ export default function MarkSheet({
             <div key={qNum}>
               {sectionLabel && (
                 <div className="mt-2 mb-1 flex items-center gap-2">
-                  <div className="h-px flex-1 bg-blue-200" />
+                  <div className="h-px flex-1 bg-blue-200 dark:bg-blue-800" />
                   <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">{sectionLabel}</span>
-                  <div className="h-px flex-1 bg-blue-200" />
+                  <div className="h-px flex-1 bg-blue-200 dark:bg-blue-800" />
                 </div>
               )}
               <div className={`flex items-center gap-[3px] rounded-md px-1 py-[3px] transition-colors ${
                 results
-                  ? isCorrect ? "bg-emerald-50 dark:bg-emerald-950/30/60 dark:bg-emerald-950/30" : "bg-red-50/60 dark:bg-red-950/30"
-                  : selected ? "bg-blue-50 dark:bg-blue-950/40/40 dark:bg-blue-950/30" : qNum % 2 === 0 ? "bg-slate-50 dark:bg-slate-900/50" : ""
+                  ? isCorrect ? "bg-emerald-50 dark:bg-emerald-950/30" : "bg-red-50/60 dark:bg-red-950/30"
+                  : selected ? "bg-blue-50 dark:bg-blue-950/30" : qNum % 2 === 0 ? "bg-slate-50 dark:bg-slate-900/50" : ""
               }`}>
                 <div className={`w-9 text-center text-[11px] font-semibold tabular-nums ${results ? (isCorrect ? "text-emerald-600 dark:text-emerald-400" : "text-red-500 dark:text-red-400") : "text-slate-500 dark:text-slate-400"}`}>
                   {qNum}
@@ -162,7 +162,7 @@ export default function MarkSheet({
                   } else if (isSelected) {
                     style = "bg-slate-800 text-white border-slate-800 shadow-sm";
                   } else {
-                    style = "border-slate-300 dark:border-slate-600 text-slate-300 dark:text-slate-600 hover:border-slate-400 dark:border-slate-500 hover:bg-slate-50 dark:bg-slate-900 active:bg-slate-100 dark:bg-slate-800";
+                    style = "border-slate-300 dark:border-slate-600 text-slate-300 dark:text-slate-600 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900 active:bg-slate-100 dark:active:bg-slate-800";
                   }
 
                   return (
@@ -182,7 +182,7 @@ export default function MarkSheet({
                   </div>
                 )}
               </div>
-              {isSectionEnd && !results && <div className="my-1 h-px bg-slate-200" />}
+              {isSectionEnd && !results && <div className="my-1 h-px bg-slate-200 dark:bg-slate-700" />}
             </div>
           );
         })}

@@ -101,6 +101,8 @@ export async function getResults(userId?: string): Promise<QuizResult[]> {
         percentage: row.percentage as number,
         timeSpentSeconds: row.time_spent_seconds as number,
         completedAt: row.completed_at as string,
+        mode: (row.mode as QuizResult["mode"]) ?? "full",
+        sectionScores: row.section_scores as QuizResult["sectionScores"],
       }));
     } catch {
       // Fall through to localStorage
@@ -146,6 +148,8 @@ export async function getResultById(id: string): Promise<QuizResult | null> {
         percentage: row.percentage as number,
         timeSpentSeconds: row.time_spent_seconds as number,
         completedAt: row.completed_at as string,
+        mode: (row.mode as QuizResult["mode"]) ?? "full",
+        sectionScores: row.section_scores as QuizResult["sectionScores"],
       };
     } catch {
       // Fall through to localStorage
@@ -375,9 +379,8 @@ export async function notifyTeachersOfSubmission(
   percentage: number,
 ): Promise<void> {
   // 先生のクラスを探して通知
-  const classesRaw = localStorage.getItem("eiken_classes");
-  if (!classesRaw) return;
-  const classes = JSON.parse(classesRaw) as { id: string; teacherId: string }[];
+  const classes = lsGet<{ id: string; teacherId: string }[]>("eiken_classes") ?? [];
+  if (classes.length === 0) return;
 
   const notifiedTeachers = new Set<string>();
 

@@ -124,19 +124,19 @@ export default function TeachingPointsPage() {
                 <div className="space-y-2">
                   {sec.point ? (
                     <>
-                      <div className="rounded bg-purple-50 p-3">
-                        <p className="text-xs font-bold text-purple-700 mb-1">指導のポイント</p>
+                      <div className="rounded bg-purple-50 dark:bg-purple-950/40 p-3">
+                        <p className="text-xs font-bold text-purple-700 dark:text-purple-300 mb-1">指導のポイント</p>
                         <p className="whitespace-pre-wrap text-sm text-[var(--foreground)]">{sec.point}</p>
                       </div>
                       {sec.commonMistakes && (
-                        <div className="rounded bg-red-50 p-3">
-                          <p className="text-xs font-bold text-red-700 mb-1">よくある間違い</p>
+                        <div className="rounded bg-red-50 dark:bg-red-950/40 p-3">
+                          <p className="text-xs font-bold text-red-700 dark:text-red-300 mb-1">よくある間違い</p>
                           <p className="whitespace-pre-wrap text-sm text-[var(--foreground)]">{sec.commonMistakes}</p>
                         </div>
                       )}
                       {sec.advice && (
-                        <div className="rounded bg-blue-50 p-3">
-                          <p className="text-xs font-bold text-blue-700 mb-1">指導アドバイス</p>
+                        <div className="rounded bg-blue-50 dark:bg-blue-950/40 p-3">
+                          <p className="text-xs font-bold text-blue-700 dark:text-blue-300 mb-1">指導アドバイス</p>
                           <p className="whitespace-pre-wrap text-sm text-[var(--foreground)]">{sec.advice}</p>
                         </div>
                       )}
