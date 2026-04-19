@@ -18,7 +18,8 @@ Web Share API など）や、Supabase無料枠で収まる範囲は OK。迷っ�
 
 ## プロジェクト概要
 
-英検（実用英語技能検定）の過去問をアプリ上で解いて、自動採点・成績管理・分析ができる学習アプリ。先生用ダッシュボードで生徒管理もできる。「共通テスト過去問演習テストジーニー」をイメージして作成。
+英検（実用英語技能検定）の過去問をアプリ上で解いて、自己採点・成績管理・分析ができる学習アプリ。
+先生用ダッシュボードで生徒管理もできる。
 
 ## 技術スタック
 
@@ -47,95 +48,138 @@ NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...
 ```
 
+## 過去問PDFの配置
+
+`public/eiken/{gradeDir}/` にPDFを配置すると、自動で試験一覧に表示される。
+
+**命名規則（準2級の例）:**
+
+```
+public/eiken/pre2kyu/
+├── mondai-{year}-{session}.pdf   # 問題PDF（必須）
+├── kotae-{year}-{session}.pdf    # 解答PDF（あれば個別参照、なければkaitou.pdfを使用）
+├── kaitou.pdf                    # 汎用解答PDF
+├── script-{year}-{session}.pdf   # リスニングスクリプト
+└── listening-script.pdf          # 汎用スクリプト
+```
+
+他級 (`5kyu`/`4kyu`/`3kyu`/`2kyu`/`pre1kyu`/`1kyu`) も同じ構造で配置可能。
+対応する `data.ts` の登録は新しい級を追加する際に必要。
+
+### 自己採点モード
+
+`answerKey` が未登録の試験は自動で「自己採点モード」で動作する：
+- 解答は記録されるが自動採点されない
+- 提出後に解答PDFへのリンクが強調表示される
+- 履歴・分析では自動採点結果と分離して表示
+
+正解データ（`answerKey`）が分かっていれば `data.ts` に `{1:2, 2:3, ...}` 形式で追記することで
+自動採点モードに切り替わる。
+
 ## ファイル構成
 
 ```
-src/app/
-├── page.tsx                         # ホーム（級選択）
-├── layout.tsx                       # ルートレイアウト（AuthProvider）
-├── globals.css                      # グローバルスタイル
-├── auth/
-│   ├── page.tsx                     # ログイン/サインアップ
-│   └── callback/route.ts           # OAuth コールバック
-├── grade/[gradeId]/page.tsx         # 級詳細（試験一覧）
-├── quiz/[examId]/page.tsx           # クイズ（問題解答）
-├── result/[resultId]/page.tsx       # 結果表示
-├── history/page.tsx                 # 解答履歴一覧
-├── analytics/page.tsx               # 成績分析ダッシュボード
-├── teacher/
-│   ├── page.tsx                     # 先生ダッシュボード
-│   └── class/[classId]/page.tsx     # クラス詳細（生徒・成績・課題）
-├── admin/import/page.tsx            # CSV問題インポート
-├── components/Header.tsx            # 共通ヘッダー
-└── lib/
-    ├── types.ts                     # 型定義
-    ├── data.ts                      # サンプル問題データ（50問+）
-    ├── storage.ts                   # データ保存（Supabase/localStorage）
-    ├── teacher-storage.ts           # 先生用CRUD
-    ├── auth-context.tsx             # 認証コンテキスト
-    └── supabase/
-        ├── client.ts                # ブラウザ用Supabaseクライアント
-        ├── server.ts                # サーバー用Supabaseクライアント
-        └── middleware.ts            # 認証ミドルウェア
-
-middleware.ts.bak                    # ミドルウェア（要リネーム、下記参照）
-supabase/
-├── schema.sql                       # DBスキーマ（RLS付き）
-└── migrations/001_initial_schema.sql
+src/
+├── proxy.ts                        # Supabase認証プロキシ（Next.js 16: 旧middleware.ts）
+├── app/
+│   ├── page.tsx                    # ホーム（級選択・ダッシュボード）
+│   ├── layout.tsx                  # ルートレイアウト
+│   ├── globals.css
+│   ├── offline/page.tsx            # オフラインフォールバック
+│   ├── auth/
+│   │   ├── page.tsx
+│   │   └── callback/route.ts
+│   ├── grade/[gradeId]/page.tsx    # 級詳細（試験一覧・モード選択）
+│   ├── quiz/[examId]/page.tsx      # クイズ（mode=full/reading/listening/writing）
+│   ├── result/[resultId]/page.tsx
+│   ├── history/page.tsx
+│   ├── analytics/page.tsx
+│   ├── drill/page.tsx              # 弱点克服ドリル
+│   ├── bookmarks/page.tsx
+│   ├── teacher/
+│   │   ├── page.tsx
+│   │   ├── class/[classId]/page.tsx
+│   │   ├── class-report/[classId]/page.tsx
+│   │   ├── student/[studentId]/page.tsx
+│   │   └── teaching-points/[examId]/page.tsx
+│   ├── components/                 # Header, BottomNav, MarkSheet, PdfViewer, Timer, Toast, etc
+│   └── lib/
+│       ├── types.ts                # 型定義（Grade, Exam, QuizMode, QuizResult, etc）
+│       ├── data.ts                 # 試験データ（PDFパスと大問構成）
+│       ├── storage.ts              # データ保存（Supabase/localStorage）
+│       ├── stats.ts                # 統計計算（streak, heatmap, avg）
+│       ├── haptics.ts              # 触覚フィードバック
+│       ├── theme-context.tsx       # light/dark/system テーマ
+│       ├── auth-context.tsx
+│       ├── teacher-storage.ts
+│       └── supabase/
+│
+public/
+├── eiken/{grade}/*.pdf             # 過去問PDF
+├── sw.js                           # サービスワーカー
+├── manifest.json                   # PWA manifest
+├── icon-192.png / icon-512.png
+└── ...
 ```
 
 ## 重要な設計ポイント
 
 ### デュアルストレージ
-`storage.ts` と `teacher-storage.ts` は `isSupabaseConfigured()` でSupabaseの接続状態を確認し、未接続時はlocalStorageにフォールバックする。Supabase無しでもデモ動作可能。
+`storage.ts` と `teacher-storage.ts` は `isSupabaseConfigured()` でSupabaseの接続状態を確認し、
+未接続時はlocalStorageにフォールバックする。Supabase無しでもデモ動作可能。
 
-### ミドルウェア注意点
-`middleware.ts.bak` は元々 `middleware.ts` だったが、Supabase未設定時にブラウザから503エラーになる問題があったため一時的にリネームした。Supabase接続時は `middleware.ts` に戻すこと。
+### クイズモード
+- `full` 通し受験
+- `reading` 筆記問題のみ（`listeningStartQ` 未満）
+- `listening` リスニング問題のみ（`listeningStartQ` 以降、要設定）
+- `writing` ライティング単独（`hasWriting: true` の試験のみ）
+
+URL: `/quiz/{examId}?mode=reading` のように切替。
 
 ### 試験ID命名規則
-`{grade}-{year}-{session}` 形式（例: `3kyu-2024-1`）。CSVインポート時にこのパターンから自動でメタデータを抽出する。
+`{grade}-{year}-{session}` 形式（例: `pre2kyu-2019-3`）。
 
-### サンプルデータ
-`data.ts` に各級5問ずつのサンプル問題を収録（著作権に配慮した独自作成問題）。実際の英検過去問データは別途CSV等でインポートする想定。
-
-## 現在の状態
-
-### 完了済み
-- 全12ページ実装済み
-- 級選択 → 試験選択 → 問題解答 → 自動採点 → 結果表示の基本フロー
-- 解答履歴の保存・表示
-- 成績分析（級別平均・正答率・推移表示）
-- 先生ダッシュボード（クラス作成・招待コード・生徒管理・課題管理）
-- CSV一括インポート
-- 認証（メール+パスワード、デモモード対応）
-- Supabase RLSポリシー設定済み
-
-### 未対応・改善点
-1. **middleware.ts.bak → middleware.ts にリネーム必要**（Supabase接続後）
-2. **実際の英検過去問データの投入**（著作権に注意）
-3. **リスニング問題の音声再生機能**（現在はテキストのみ）
-4. **ライティング問題の採点機能**（自由記述の自動採点）
-5. **PWA対応**（Service Worker、オフライン対応）
-6. **ネイティブアプリ化**（Capacitor）
-7. **テストコードの追加**
-8. **本番デプロイ**（Vercel推奨）
+### PWA
+- `public/sw.js`: network-first (navigation) / stale-while-revalidate (static) / network-first with fallback (PDF)
+- `public/manifest.json`: standalone, maskable icons, shortcuts 3種
+- `src/app/components/PwaInstallPrompt.tsx`: 14日クールダウンで再表示
 
 ## 開発コマンド
 
 ```bash
-npm run dev       # 開発サーバー (http://localhost:3000)
+npm run dev       # 開発サーバー
 npm run build     # プロダクションビルド
 npm run lint      # ESLint
 npx tsc --noEmit  # 型チェック
 ```
 
-## ビルド & デプロイ
+## 現在の状態
 
-```bash
-# middleware.ts.bak を middleware.ts にリネームしてからビルド
-mv middleware.ts.bak middleware.ts
-npm run build
-npm start
-```
+### 登録済み過去問
+- **準2級 9試験** (2014-2019): 自己採点モード
+  - 自動採点対応は `answerKey` を `data.ts` に追加すれば有効化
 
-Vercelデプロイ時は環境変数にSupabaseの値を設定すること。
+### 未登録
+- 5級/4級/3級/2級/準1級/1級 — PDFアップロード待ち
+
+### 完了機能
+- 級選択 → 試験選択 → 4モード選択 → 解答 → 提出 → 履歴の基本フロー
+- PDFビューア・マークシート・ライティング入力・リスニングスクリプトPDFリンク
+- 自動採点 / 自己採点 / ライティング提出の3モード
+- 成績分析（level別平均・正答率推移・分野別レーダー）
+- 先生ダッシュボード（クラス・生徒・課題・カウンセリング）
+- 認証（メール+パスワード、デモモード対応、Supabase RLS対応）
+- 4モード受験機能（通し/R/L/W）
+- ブックマーク・弱点ドリル
+- ダークモード/ライト/システム連動
+- PWA（オフラインフォールバック、インストール、SW v2）
+- 触覚フィードバック（prefers-reduced-motion尊重）
+- モバイルBottomNav・タイマー（警告音・一時停止）
+
+### 未対応・改善候補
+- 他級の過去問PDF投入（著作権に注意）
+- リスニング音源の統合（現状はPDFスクリプトのみ）
+- ライティング自動採点（現状は模範解答比較のみ）
+- プッシュ通知サーバー配信（コスト非採用）
+- テストコード（Vitest/Playwright）
+- 本番デプロイ（Vercel推奨）
