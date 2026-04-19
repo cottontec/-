@@ -179,7 +179,7 @@ function Dashboard({
               </div>
               <p className="font-bold text-[var(--foreground)]">{info.label}</p>
               <p className="mt-1 text-[10px] text-[var(--muted)]">
-                {hasExams ? `${examCount}試験` : "未登録"}
+                {hasExams ? `${examCount}試験` : "準備中"}
               </p>
             </Link>
           );
