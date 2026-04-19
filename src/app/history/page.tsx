@@ -55,6 +55,8 @@ export default function HistoryPage() {
                   <div className="text-right shrink-0">
                     {result.mode === "writing" ? (
                       <p className="text-sm font-medium text-amber-600 dark:text-amber-400">作文提出</p>
+                    ) : result.totalPoints === 0 ? (
+                      <p className="text-sm font-medium text-blue-600 dark:text-blue-400">自己採点</p>
                     ) : (
                       <>
                         <p className="text-2xl font-bold text-blue-600">{result.percentage}%</p>

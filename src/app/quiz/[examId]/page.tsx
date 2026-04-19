@@ -185,9 +185,10 @@ export default function QuizPage() {
       setSubmitted(true);
       tapMedium();
     } else if (isPdfMode && !exam.answerKey) {
-      // 自己採点モード: 解答キー未登録。回答だけ保存し、解答PDFで突き合わせ。
-      totalPoints = rangeEnd - rangeStart + 1;
-      score = 0; // 自動採点しない
+      // 自己採点モード: 解答キー未登録。回答は保存するが採点はしない。
+      // 採点対象外と分かるように totalPoints=0 で保存（履歴/分析で弾く）。
+      totalPoints = 0;
+      score = 0;
       setSubmitted(true);
       tapMedium();
       toast("自己採点モード: 解答PDFで答え合わせしてください", "info");
@@ -279,13 +280,27 @@ export default function QuizPage() {
       <div className="min-h-screen bg-[var(--background)]">
         <Header />
         <div className="mx-auto max-w-md px-4 py-20 text-center">
-          <p className="text-[var(--muted)]">試験が見つかりませんでした</p>
-          <button
-            onClick={() => router.push("/")}
-            className="mt-4 rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
-          >
-            ホームに戻る
-          </button>
+          <h2 className="text-lg font-bold text-[var(--foreground)]">試験が見つかりませんでした</h2>
+          <p className="mt-2 text-sm text-[var(--muted)]">
+            ID <code className="rounded bg-[var(--surface-2)] px-1 font-mono text-xs">{id}</code> の試験は登録されていません。
+          </p>
+          <p className="mt-1 text-xs text-[var(--muted)]">
+            過去問PDFが追加されると自動で利用できるようになります。
+          </p>
+          <div className="mt-6 flex justify-center gap-2">
+            <button
+              onClick={() => router.back()}
+              className="rounded-md border border-[var(--border)] px-4 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-2)]"
+            >
+              前のページへ
+            </button>
+            <button
+              onClick={() => router.push("/")}
+              className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+            >
+              ホームに戻る
+            </button>
+          </div>
         </div>
       </div>
     );

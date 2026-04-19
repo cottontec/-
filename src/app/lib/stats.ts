@@ -45,11 +45,12 @@ export function attemptsInLastDays(results: QuizResult[], days: number): number 
   return results.filter((r) => new Date(r.completedAt).getTime() >= cutoff).length;
 }
 
-/** 全結果の平均正答率 */
+/** 全結果の平均正答率（自動採点された結果のみ対象、自己採点・ライティングは除外） */
 export function averagePercentage(results: QuizResult[]): number {
-  if (results.length === 0) return 0;
-  const total = results.reduce((sum, r) => sum + r.percentage, 0);
-  return Math.round((total / results.length) * 10) / 10;
+  const scored = results.filter((r) => r.totalPoints > 0 && (r.mode ?? "full") !== "writing");
+  if (scored.length === 0) return 0;
+  const total = scored.reduce((sum, r) => sum + r.percentage, 0);
+  return Math.round((total / scored.length) * 10) / 10;
 }
 
 /** 直近に最も多くチャレンジした級 */

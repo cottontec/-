@@ -93,7 +93,7 @@ export default function ResultPage() {
               <p className="text-2xl font-bold text-[var(--foreground)]">ライティング提出済み</p>
               <p className="mt-2 text-sm text-[var(--muted)]">自動採点はありません。模範解答と比較しましょう。</p>
             </div>
-          ) : result.totalPoints === 0 || result.score === 0 && !exam?.answerKey ? (
+          ) : result.totalPoints === 0 ? (
             <div className="mb-4">
               <p className="text-2xl font-bold text-[var(--foreground)]">回答を保存しました</p>
               <p className="mt-2 text-sm text-[var(--muted)]">この試験は自己採点モードです。解答PDFと比較してください。</p>
@@ -135,7 +135,29 @@ export default function ResultPage() {
           </div>
         </div>
 
-        {/* 正誤一覧 */}
+        {/* 自己採点モード: 回答一覧（正誤なし） */}
+        {result.totalPoints === 0 && result.mode !== "writing" && result.answers.length > 0 && (
+          <>
+            <h3 className="mb-4 text-lg font-semibold text-[var(--foreground)]">あなたの解答一覧</h3>
+            <p className="mb-3 text-xs text-[var(--muted)]">解答PDFと突き合わせて正解数を数えてください。</p>
+            <div className="mb-8 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+              <div className="grid grid-cols-5 gap-2 sm:grid-cols-8">
+                {result.answers.map((answer, idx) => {
+                  const qNum = idx + 1;
+                  return (
+                    <div key={answer.questionId} className="flex items-center gap-1 text-xs">
+                      <span className="font-mono text-[var(--muted)]">{qNum}.</span>
+                      <span className="font-bold text-[var(--foreground)]">{answer.selectedAnswer ?? "—"}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* 正誤一覧（採点済みの従来モードのみ） */}
+        {questions.length > 0 && result.totalPoints > 0 && (<>
         <h3 className="mb-4 text-lg font-semibold text-[var(--foreground)]">問題ごとの結果</h3>
         <div className="space-y-3">
           {result.answers.map((answer) => {
@@ -172,6 +194,7 @@ export default function ResultPage() {
             );
           })}
         </div>
+        </>)}
       </main>
     </div>
   );

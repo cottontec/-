@@ -35,6 +35,13 @@ const PRE2KYU_SCRIPT = new Set([
   "2019-1", "2019-2", "2019-3",
 ]);
 
+/** 準2級 旧形式（2014-2019、2024リニューアル前）の大問構成 */
+const PRE2KYU_LEGACY_SECTIONS = [
+  { name: "大問1 短文の語句空所補充", startQ: 1, endQ: 15 },
+  { name: "大問2 会話文の文空所補充", startQ: 16, endQ: 20 },
+  { name: "大問3 長文の内容一致選択", startQ: 21, endQ: 29 },
+];
+
 function pre2kyuExam({ year, session }: { year: number; session: number }): Exam {
   const key = `${year}-${session}`;
   const hasKotae = PRE2KYU_KOTAE.has(key);
@@ -46,7 +53,7 @@ function pre2kyuExam({ year, session }: { year: number; session: number }): Exam
     session,
     section: "reading",
     title: `準2級 ${year}年 第${session}回`,
-    // 準2級は2024リニューアル前: 大問1(15)+2(5)+3(9)=29問 + リスニング30問(別PDF)
+    // 2014-2019（リニューアル前）: 大問1(15)+2(5)+3(9)=29問 + リスニング30問(別PDF)
     questionCount: 29,
     timeLimitMinutes: 75,
     pdfUrl: `${BASE}/pre2kyu/mondai-${year}-${session}.pdf`,
@@ -54,6 +61,7 @@ function pre2kyuExam({ year, session }: { year: number; session: number }): Exam
       ? `${BASE}/pre2kyu/kotae-${year}-${session}.pdf`
       : `${BASE}/pre2kyu/kaitou.pdf`,
     scriptPdfUrl: hasScript ? `${BASE}/pre2kyu/script-${year}-${session}.pdf` : undefined,
+    sections: PRE2KYU_LEGACY_SECTIONS,
     // answerKey は未入力 → 自己採点モード
   };
 }
