@@ -14,7 +14,7 @@ import { useToast } from "@/app/components/Toast";
 import { tapLight, tapMedium, tapSuccess, tapError } from "@/app/lib/haptics";
 import { useAuth } from "@/app/lib/auth-context";
 import { getQuestions, getModeRange, isModeAvailable, SAMPLE_EXAMS } from "@/app/lib/data";
-import { saveResult, notifyTeachersOfSubmission } from "@/app/lib/storage";
+import { saveResult } from "@/app/lib/storage";
 import type { Question, LapTime, QuizMode } from "@/app/lib/types";
 import { GRADE_SECTIONS, QUIZ_MODES } from "@/app/lib/types";
 import { ArrowLeft, ArrowRight, Check, Clock, Send } from "lucide-react";
@@ -36,6 +36,13 @@ export default function QuizPage() {
   // 未対応のモードが指定された場合は通しに戻す
   const resolvedMode: QuizMode = (exam && isModeAvailable(exam, quizMode)) ? quizMode : "full";
   const modeRange = exam ? getModeRange(exam, resolvedMode) : null;
+
+  // 最後に使ったモードを記憶（次回来たときに参考にする用）
+  useEffect(() => {
+    if (typeof window !== "undefined" && exam) {
+      try { localStorage.setItem("eiken_last_mode", resolvedMode); } catch { /* noop */ }
+    }
+  }, [resolvedMode, exam]);
 
   // 従来モード用
   const questions: Question[] = useMemo(() => getQuestions(id), [id]);
@@ -259,15 +266,6 @@ export default function QuizPage() {
       lapTimes: lapTimes.length > 0 ? lapTimes : undefined,
       sectionScores,
     });
-
-    // 先生に通知
-    notifyTeachersOfSubmission(
-      user.id,
-      user.displayName,
-      exam.title,
-      resultId,
-      percentage,
-    ).catch(() => {/* 通知失敗は無視 */});
 
     if (!isPdfMode) {
       router.push(`/result/${resultId}`);

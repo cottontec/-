@@ -144,32 +144,6 @@ export interface CounselingNote {
   createdAt: string;
 }
 
-/** アプリ内通知 */
-export interface AppNotification {
-  id: string;
-  recipientId: string; // 通知先ユーザーID
-  type: "submission" | "counseling" | "assignment" | "general";
-  title: string;
-  message: string;
-  link?: string; // クリック時の遷移先
-  read: boolean;
-  createdAt: string;
-}
-
-/** 試験の解説コンテンツ（後から先生が追加） */
-export interface ExamExplanation {
-  examId: string;
-  /** 大問ごとの解説 */
-  sections: ExplanationSection[];
-  updatedAt: string;
-}
-
-export interface ExplanationSection {
-  name: string; // 例: "大問1 語彙"
-  content: string; // Markdown/テキスト解説
-  questionRange: string; // 例: "問1〜15"
-}
-
 /** 指導ポイント（先生アカウントのみ閲覧可） */
 export interface TeachingPoint {
   examId: string;
