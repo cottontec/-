@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# 学習履歴や試験結果など個人データが含まれうるページはクロールしない
+Disallow: /result/
+Disallow: /history
+Disallow: /bookmarks
+Disallow: /teacher/
+Disallow: /auth/

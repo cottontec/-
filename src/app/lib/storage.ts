@@ -57,6 +57,8 @@ export async function saveResult(result: QuizResult): Promise<void> {
         percentage: result.percentage,
         time_spent_seconds: result.timeSpentSeconds,
         completed_at: result.completedAt,
+        mode: result.mode ?? "full",
+        section_scores: result.sectionScores ?? null,
       });
       if (error) throw error;
       return;
