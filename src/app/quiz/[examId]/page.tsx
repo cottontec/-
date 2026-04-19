@@ -184,6 +184,13 @@ export default function QuizPage() {
       setMarkResults(results);
       setSubmitted(true);
       tapMedium();
+    } else if (isPdfMode && !exam.answerKey) {
+      // 自己採点モード: 解答キー未登録。回答だけ保存し、解答PDFで突き合わせ。
+      totalPoints = rangeEnd - rangeStart + 1;
+      score = 0; // 自動採点しない
+      setSubmitted(true);
+      tapMedium();
+      toast("自己採点モード: 解答PDFで答え合わせしてください", "info");
     } else {
       // 従来モード採点
       questions.forEach((q) => {
@@ -301,7 +308,7 @@ export default function QuizPage() {
                 active={!submitted && answeredCount > 0}
                 onTimeUp={() => {
                   if (!submitted) {
-                    toast("制限時間です。自動採点します", "info");
+                    toast(exam.answerKey ? "制限時間です。自動採点します" : "制限時間です。回答を保存します", "info");
                     handleSubmit();
                   }
                 }}
@@ -321,6 +328,31 @@ export default function QuizPage() {
               {!exam.pdfUrl && (
                 <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] py-20 text-center text-[var(--muted)]">
                   PDF URLが設定されていません
+                </div>
+              )}
+              {/* 自己採点用の関連PDF */}
+              {(exam.answerPdfUrl || exam.scriptPdfUrl) && (
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {exam.answerPdfUrl && (
+                    <a
+                      href={exam.answerPdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-[var(--foreground)] hover:bg-[var(--surface-2)]"
+                    >
+                      📄 解答PDFを開く
+                    </a>
+                  )}
+                  {exam.scriptPdfUrl && (
+                    <a
+                      href={exam.scriptPdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-[var(--foreground)] hover:bg-[var(--surface-2)]"
+                    >
+                      🎧 リスニングスクリプト
+                    </a>
+                  )}
                 </div>
               )}
             </div>
@@ -373,23 +405,40 @@ export default function QuizPage() {
               )}
 
               {!submitted ? (
-                <button
-                  onClick={handleSubmit}
-                  disabled={
-                    submitting ||
-                    (resolvedMode === "writing"
-                      ? writingAnswer.text.trim().length === 0
-                      : answeredCount === 0)
-                  }
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-lg font-bold text-white hover:bg-green-700 disabled:opacity-50"
-                >
-                  <Send size={20} />
-                  {submitting
-                    ? (resolvedMode === "writing" ? "保存中..." : "採点中...")
-                    : (resolvedMode === "writing" ? "提出する" : "採点する")}
-                </button>
+                <>
+                  {!exam.answerKey && resolvedMode !== "writing" && (
+                    <div className="rounded-md border border-blue-300 bg-blue-50 p-3 text-xs text-blue-900 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-200">
+                      ℹ️ この試験は<b>自己採点モード</b>です。解答後、解答PDFを見て答え合わせしてください。
+                    </div>
+                  )}
+                  <button
+                    onClick={handleSubmit}
+                    disabled={
+                      submitting ||
+                      (resolvedMode === "writing"
+                        ? writingAnswer.text.trim().length === 0
+                        : answeredCount === 0)
+                    }
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-lg font-bold text-white hover:bg-green-700 disabled:opacity-50"
+                  >
+                    <Send size={20} />
+                    {submitting
+                      ? (resolvedMode === "writing" ? "保存中..." : exam.answerKey ? "採点中..." : "保存中...")
+                      : (resolvedMode === "writing" ? "提出する" : exam.answerKey ? "採点する" : "提出する")}
+                  </button>
+                </>
               ) : (
                 <div className="space-y-2">
+                  {!exam.answerKey && resolvedMode !== "writing" && exam.answerPdfUrl && (
+                    <a
+                      href={exam.answerPdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex w-full items-center justify-center gap-2 rounded-lg bg-amber-500 px-6 py-3 text-sm font-bold text-white hover:bg-amber-600"
+                    >
+                      📄 解答PDFで答え合わせ
+                    </a>
+                  )}
                   <button
                     onClick={() => {
                       setMarkAnswers({});

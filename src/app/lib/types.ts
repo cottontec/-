@@ -39,6 +39,10 @@ export interface Exam {
   writingModelAnswer?: string; // ライティング模範解答
   writingTopic?: string; // ライティング問題文
   listeningAudioUrl?: string; // リスニング音声URL（問題PDFとは別）
+  /** 解答PDF URL（自己採点用） */
+  answerPdfUrl?: string;
+  /** リスニングスクリプト PDF URL */
+  scriptPdfUrl?: string;
   /** 大問構成（ラップタイム記録用） */
   sections?: ExamSection[];
 }

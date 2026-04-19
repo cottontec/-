@@ -93,6 +93,11 @@ export default function ResultPage() {
               <p className="text-2xl font-bold text-[var(--foreground)]">ライティング提出済み</p>
               <p className="mt-2 text-sm text-[var(--muted)]">自動採点はありません。模範解答と比較しましょう。</p>
             </div>
+          ) : result.totalPoints === 0 || result.score === 0 && !exam?.answerKey ? (
+            <div className="mb-4">
+              <p className="text-2xl font-bold text-[var(--foreground)]">回答を保存しました</p>
+              <p className="mt-2 text-sm text-[var(--muted)]">この試験は自己採点モードです。解答PDFと比較してください。</p>
+            </div>
           ) : (
             <>
               <div className="mb-4">
@@ -104,17 +109,29 @@ export default function ResultPage() {
           )}
           <p className="mt-2 text-sm text-[var(--muted)]">所要時間: {formatTime(result.timeSpentSeconds)}</p>
           <div className="mt-6 flex flex-wrap justify-center gap-2 sm:gap-4">
+            {exam?.answerPdfUrl && !exam?.answerKey && (
+              <a
+                href={exam.answerPdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 rounded-md bg-amber-500 px-4 py-2 text-sm font-bold text-white hover:bg-amber-600"
+              >
+                📄 解答PDFを見る
+              </a>
+            )}
             {exam && (
               <Link href={`/quiz/${exam.id}`} className="flex items-center gap-1 rounded-md border border-[var(--border)] px-4 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-2)]">
                 <RotateCcw size={16} /> もう一度挑戦
               </Link>
             )}
             <Link href="/" className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">ホームに戻る</Link>
-            <ShareButton
-              title={`英検${gradeLabel} 結果`}
-              text={`英検${gradeLabel}で${result.percentage}%獲得！`}
-              label="結果を共有"
-            />
+            {(exam?.answerKey || result.mode === "writing") && (
+              <ShareButton
+                title={`英検${gradeLabel} 結果`}
+                text={result.mode === "writing" ? `英検${gradeLabel}でライティング練習完了！` : `英検${gradeLabel}で${result.percentage}%獲得！`}
+                label="結果を共有"
+              />
+            )}
           </div>
         </div>
 

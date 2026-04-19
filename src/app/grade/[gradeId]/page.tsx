@@ -101,6 +101,15 @@ export default function GradePage() {
           <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] py-12 text-center">
             <FileText size={48} className="mx-auto text-[var(--muted)]" />
             <p className="mt-4 text-[var(--muted)]">この級の過去問はまだ登録されていません</p>
+            <p className="mt-2 text-xs text-[var(--muted)]">
+              PDFを <code className="rounded bg-[var(--surface-2)] px-1 py-0.5 font-mono text-[11px]">public/eiken/{grade}/</code> にアップロードしてください
+            </p>
+            <Link
+              href="/"
+              className="mt-4 inline-flex items-center gap-1 rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+            >
+              他の級を見る
+            </Link>
           </div>
         )}
       </main>

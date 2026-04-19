@@ -164,18 +164,23 @@ function Dashboard({
         {GRADES.map((grade) => {
           const info = GRADE_INFO[grade];
           const isFocus = grade === focusGrade;
+          const examCount = SAMPLE_EXAMS.filter((e) => e.grade === grade).length;
+          const hasExams = examCount > 0;
           return (
             <Link
               key={grade}
               href={`/grade/${grade}`}
-              className={`group rounded-xl border bg-[var(--surface)] p-4 text-center card-hover ${
+              className={`group relative rounded-xl border bg-[var(--surface)] p-4 text-center card-hover ${
                 isFocus ? "border-blue-500 ring-2 ring-blue-500/20" : "border-[var(--border)]"
-              }`}
+              } ${!hasExams ? "opacity-60" : ""}`}
             >
               <div className={`mx-auto mb-2 inline-flex h-10 w-10 items-center justify-center rounded-full text-white ${info.bgColor}`}>
                 <BookOpen size={18} />
               </div>
               <p className="font-bold text-[var(--foreground)]">{info.label}</p>
+              <p className="mt-1 text-[10px] text-[var(--muted)]">
+                {hasExams ? `${examCount}試験` : "未登録"}
+              </p>
             </Link>
           );
         })}
